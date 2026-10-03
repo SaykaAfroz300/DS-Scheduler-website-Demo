@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getAuthUser, seedAdmin } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
     try {
         // Seed admin on first check
