@@ -1,3 +1,6 @@
+Live link:
+https://ds-scheduler-website-demo-one.vercel.app/
+
 # DS Scheduler — Dhaka Sessions Task Scheduler
 
 A full-stack Next.js + MongoDB task scheduling application for **Dhaka Sessions**. Admin manages upload tasks across YouTube, Spotify, Instagram, Snapchat, and Facebook — assigning them to team members with deadlines, leave management, and notifications.
