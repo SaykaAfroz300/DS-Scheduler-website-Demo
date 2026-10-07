@@ -1,11 +1,11 @@
 import { formatDateTimeBD, formatDateBD, dhakaDateKey } from './datetime';
 
 export const PLATFORMS = [
-    { id: 'youtube', label: 'YouTube', initial: 'YT' },
-    { id: 'spotify', label: 'Spotify', initial: 'SP' },
-    { id: 'instagram', label: 'Instagram', initial: 'IG' },
-    { id: 'snapchat', label: 'Snapchat', initial: 'SC' },
     { id: 'facebook', label: 'Facebook', initial: 'FB' },
+    { id: 'instagram', label: 'Instagram', initial: 'IG' },
+    { id: 'youtube', label: 'YouTube', initial: 'YT' },
+    { id: 'snapchat', label: 'Snapchat', initial: 'SC' },
+    { id: 'spotify', label: 'Spotify', initial: 'SP' },
 ];
 
 export const platformMeta = (id) =>
