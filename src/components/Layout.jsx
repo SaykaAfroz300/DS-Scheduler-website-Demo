@@ -71,7 +71,7 @@ export default function Layout({ view, setView, unreadCount, chatUnreadCount, is
                 <div className="px-5 py-6">
                     <div className="flex flex-col gap-2">
                         {/* UPDATE YOUR LOGO HERE: Change src="/logo.png" to the name of the file you place in your public/ folder */}
-                        <img src="/logo.png" alt="Dhaka Sessions Logo" className="h-8 w-auto object-contain self-start" />
+                        <img src="/logo.jpeg" alt="Dhaka Sessions Logo" className="h-8 w-auto object-contain self-start" />
                         <div>
                             <h1 className="font-display text-[15px] font-bold tracking-[0.2em] text-[#FAFAFA]">DHAKA SESSIONS</h1>
                             <p className="mt-0.5 text-[10px] uppercase tracking-[0.25em] text-[#525252]">Scheduler</p>
