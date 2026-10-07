@@ -12,6 +12,7 @@ import TaskCard from '@/components/TaskCard';
 import LeavePanel from '@/components/LeavePanel';
 import EmployeeRoster from '@/components/EmployeeRoster';
 import NotificationsPanel from '@/components/NotificationsPanel';
+import MessagesPanel from '@/components/MessagesPanel';
 import { formatLongDateBD, dhakaHour } from '@/lib/datetime';
 import { getPendingWarning } from '@/lib/status';
 
@@ -37,6 +38,10 @@ export default function Home() {
         approveEmployee,
         denyEmployee,
         requestAccess,
+        chatSummary,
+        chatUnreadCount,
+        loadMessages,
+        sendMessage,
     } = useStudioData(user);
 
     const [view, setView] = useState('calendar');
@@ -73,7 +78,7 @@ export default function Home() {
     }
 
     return (
-        <Layout view={view} setView={setView} unreadCount={unreadCount} isAdmin={isAdmin}>
+        <Layout view={view} setView={setView} unreadCount={unreadCount} chatUnreadCount={chatUnreadCount} isAdmin={isAdmin}>
             <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 sm:py-10">
                 {/* Hero header */}
                 <header className="mb-8">
@@ -146,6 +151,8 @@ export default function Home() {
                     )
                 ) : view === 'leave' ? (
                     <LeavePanel isAdmin={isAdmin} leaveRequests={leaveRequests} onSubmit={submitLeave} onRespond={respondLeave} />
+                ) : view === 'messages' ? (
+                    <MessagesPanel chatSummary={chatSummary} loadMessages={loadMessages} sendMessage={sendMessage} isAdmin={isAdmin} />
                 ) : (
                     <NotificationsPanel notifications={notifications} onMarkAllRead={markAllRead} />
                 )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CalendarDays, ListTodo, Palmtree, Bell, LogOut, Users } from 'lucide-react';
+import { CalendarDays, ListTodo, Palmtree, Bell, LogOut, Users, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -10,10 +10,11 @@ const NAV = [
     { id: 'tasks', label: 'Tasks', icon: ListTodo },
     { id: 'team', label: 'Team', icon: Users, adminOnly: true },
     { id: 'leave', label: 'Leave', icon: Palmtree },
+    { id: 'messages', label: 'Messages', icon: MessageCircle },
     { id: 'notifications', label: 'Alerts', icon: Bell },
 ];
 
-export default function Layout({ view, setView, unreadCount, isAdmin, children }) {
+export default function Layout({ view, setView, unreadCount, chatUnreadCount, isAdmin, children }) {
     const isMobile = useIsMobile();
     const { user, logout } = useAuth();
     const nav = isAdmin ? NAV : NAV.filter((n) => !n.adminOnly);
@@ -48,6 +49,9 @@ export default function Layout({ view, setView, unreadCount, isAdmin, children }
                                 {item.id === 'notifications' && unreadCount > 0 && (
                                     <span className="absolute right-[22%] top-1.5 h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
                                 )}
+                                {item.id === 'messages' && chatUnreadCount > 0 && (
+                                    <span className="absolute right-[22%] top-1.5 h-1.5 w-1.5 rounded-full bg-[#ef4444]" />
+                                )}
                                 {active && <span className="absolute inset-x-0 top-0 h-0.5 bg-[#FAFAFA]" />}
                             </button>
                         );
@@ -81,6 +85,11 @@ export default function Layout({ view, setView, unreadCount, isAdmin, children }
                                 {item.id === 'notifications' && unreadCount > 0 && (
                                     <span className="ml-auto rounded-full bg-[#FAFAFA] px-1.5 py-0.5 text-[10px] font-semibold text-[#080808]">
                                         {unreadCount}
+                                    </span>
+                                )}
+                                {item.id === 'messages' && chatUnreadCount > 0 && (
+                                    <span className="ml-auto rounded-full bg-[#ef4444] px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                        {chatUnreadCount}
                                     </span>
                                 )}
                             </button>

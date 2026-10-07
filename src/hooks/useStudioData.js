@@ -6,6 +6,8 @@ export function useStudioData(user) {
     const [users, setUsers] = useState([]);
     const [notifications, setNotifications] = useState([]);
     const [leaveRequests, setLeaveRequests] = useState([]);
+    const [chatSummary, setChatSummary] = useState([]);
+    const [chatUnreadCount, setChatUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [accessStatus, setAccessStatus] = useState(null); // null = checking
     const [accessRecords, setAccessRecords] = useState([]);
@@ -55,6 +57,29 @@ export function useStudioData(user) {
             console.error('loadAccess failed', e);
         }
     }, [callApi]);
+
+    const loadChatSummary = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const data = await callApi('loadChatSummary');
+            setChatSummary(data.conversations || []);
+            setChatUnreadCount(data.unreadTotal || 0);
+        } catch (e) {
+            console.error('loadChatSummary failed', e);
+        }
+    }, [userId, callApi]);
+
+    // Polling for chat summary every 5 seconds
+    useEffect(() => {
+        if (accessStatus !== 'admin' && accessStatus !== 'approved') return;
+        
+        loadChatSummary();
+        const interval = setInterval(() => {
+            loadChatSummary();
+        }, 5000);
+        
+        return () => clearInterval(interval);
+    }, [accessStatus, loadChatSummary]);
 
     // On mount / user change: resolve approval status first, then load data only if allowed.
     useEffect(() => {
@@ -172,6 +197,25 @@ export function useStudioData(user) {
         }
     }, []);
 
+    const loadMessages = useCallback(
+        async (conversationId) => {
+            const data = await callApi('loadMessages', { conversationId });
+            // Loading messages also marks them as read, so refresh summary
+            loadChatSummary();
+            return data.messages || [];
+        },
+        [callApi, loadChatSummary]
+    );
+
+    const sendMessage = useCallback(
+        async (conversationId, text) => {
+            const data = await callApi('sendMessage', { conversationId, text });
+            loadChatSummary();
+            return data.message;
+        },
+        [callApi, loadChatSummary]
+    );
+
     return {
         tasks,
         users,
@@ -192,6 +236,10 @@ export function useStudioData(user) {
         approveEmployee,
         denyEmployee,
         requestAccess,
+        chatSummary,
+        chatUnreadCount,
+        loadMessages,
+        sendMessage,
         reload: loadAll,
     };
 }

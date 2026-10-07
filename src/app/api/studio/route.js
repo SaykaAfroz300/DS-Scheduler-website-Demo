@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/dbConnect';
 import { getAuthUser } from '@/lib/auth';
 import Task from '@/models/Task';
 import Notification from '@/models/Notification';
 import LeaveRequest from '@/models/LeaveRequest';
 import EmployeeAccess from '@/models/EmployeeAccess';
+import Message from '@/models/Message';
 
 // Helper to check admin
 function requireAdmin(user) {
@@ -20,6 +22,32 @@ async function requireApproved(user) {
     if (!access) {
         throw { status: 403, message: 'Your access is not approved' };
     }
+}
+
+// Chat: 'team' is open to every approved member; 'dm:<userId>' only to that employee and admins.
+function requireConversationAccess(user, conversationId) {
+    if (conversationId === 'team') return;
+    if (typeof conversationId === 'string' && conversationId.startsWith('dm:')) {
+        const ownerId = conversationId.slice(3);
+        if (!mongoose.Types.ObjectId.isValid(ownerId)) {
+            throw { status: 400, message: 'Invalid conversation' };
+        }
+        if (user.role === 'admin' || ownerId === String(user.id)) return;
+    }
+    throw { status: 403, message: 'You cannot access this conversation' };
+}
+
+function toPlainMessage(m, userId) {
+    return {
+        id: m._id.toString(),
+        conversation_id: m.conversation_id,
+        sender_id: m.sender_id.toString(),
+        sender_name: m.sender_name || '',
+        sender_role: m.sender_role || 'user',
+        text: m.text,
+        created_date: m.created_date,
+        is_mine: m.sender_id.toString() === String(userId),
+    };
 }
 
 function toPlain(doc) {
@@ -281,6 +309,111 @@ export async function POST(request) {
                     { $set: { status: 'denied', denied_at: new Date(), denied_by_id: user.id, denial_reason: body.reason || '' } }
                 );
                 return NextResponse.json({ ok: true });
+            }
+
+            case 'loadChatSummary': {
+                await requireApproved(user);
+                const uid = new mongoose.Types.ObjectId(String(user.id));
+
+                // Build the list of conversations this user can see.
+                let conversations;
+                if (isAdmin) {
+                    const employees = await EmployeeAccess.find({ status: 'approved' }).limit(500).lean();
+                    conversations = [
+                        { id: 'team', type: 'team', title: 'Team Chat' },
+                        ...employees.map((a) => ({
+                            id: `dm:${a.user_id.toString()}`,
+                            type: 'dm',
+                            title: a.full_name || a.email || 'Employee',
+                            subtitle: a.email || '',
+                        })),
+                    ];
+                } else {
+                    conversations = [
+                        { id: `dm:${user.id}`, type: 'dm', title: 'Admin', subtitle: 'Private chat with admin' },
+                        { id: 'team', type: 'team', title: 'Team Chat' },
+                    ];
+                }
+
+                const ids = conversations.map((c) => c.id);
+                const stats = await Message.aggregate([
+                    { $match: { conversation_id: { $in: ids } } },
+                    { $sort: { created_date: -1 } },
+                    {
+                        $group: {
+                            _id: '$conversation_id',
+                            last: { $first: '$$ROOT' },
+                            unread: {
+                                $sum: {
+                                    $cond: [
+                                        {
+                                            $and: [
+                                                { $ne: ['$sender_id', uid] },
+                                                { $not: [{ $in: [uid, { $ifNull: ['$read_by', []] }] }] },
+                                            ],
+                                        },
+                                        1,
+                                        0,
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                ]);
+                const byId = Object.fromEntries(stats.map((s) => [s._id, s]));
+
+                const result = conversations.map((c) => {
+                    const s = byId[c.id];
+                    return {
+                        ...c,
+                        unread: s ? s.unread : 0,
+                        last_message: s ? toPlainMessage(s.last, user.id) : null,
+                    };
+                });
+                const unreadTotal = result.reduce((sum, c) => sum + c.unread, 0);
+
+                return NextResponse.json({ conversations: result, unreadTotal });
+            }
+
+            case 'loadMessages': {
+                await requireApproved(user);
+                const { conversationId } = body;
+                requireConversationAccess(user, conversationId);
+
+                const messages = await Message.find({ conversation_id: conversationId })
+                    .sort({ created_date: -1 })
+                    .limit(200)
+                    .lean();
+
+                // Opening a conversation marks everything in it as read for this user.
+                await Message.updateMany(
+                    { conversation_id: conversationId, sender_id: { $ne: user.id }, read_by: { $ne: user.id } },
+                    { $addToSet: { read_by: user.id } }
+                );
+
+                return NextResponse.json({
+                    messages: messages.reverse().map((m) => toPlainMessage(m, user.id)),
+                });
+            }
+
+            case 'sendMessage': {
+                await requireApproved(user);
+                const { conversationId } = body;
+                requireConversationAccess(user, conversationId);
+                const text = String(body.text || '').trim();
+                if (!text) throw { status: 400, message: 'Message cannot be empty' };
+                if (text.length > 4000) throw { status: 400, message: 'Message is too long' };
+
+                const msg = await Message.create({
+                    conversation_id: conversationId,
+                    sender_id: user.id,
+                    sender_name: user.full_name || user.email || '',
+                    sender_role: user.role || 'user',
+                    text,
+                    read_by: [user.id],
+                });
+
+                return NextResponse.json({ message: toPlainMessage(msg, user.id) });
             }
 
             default:
