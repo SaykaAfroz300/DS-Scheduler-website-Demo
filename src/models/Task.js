@@ -45,6 +45,10 @@ const TaskSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    deleted: {
+        type: Boolean,
+        default: false,
+    },
 }, {
     timestamps: { createdAt: 'created_date', updatedAt: 'updated_date' },
 });

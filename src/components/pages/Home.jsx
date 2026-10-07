@@ -14,7 +14,7 @@ import EmployeeRoster from '@/components/EmployeeRoster';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import MessagesPanel from '@/components/MessagesPanel';
 import { formatLongDateBD, dhakaHour } from '@/lib/datetime';
-import { getPendingWarning } from '@/lib/status';
+import { getPendingWarning, PLATFORMS } from '@/lib/status';
 
 export default function Home() {
     const { user, logout } = useAuth();
@@ -45,17 +45,21 @@ export default function Home() {
     } = useStudioData(user);
 
     const [view, setView] = useState('calendar');
-    const [taskFilter, setTaskFilter] = useState('all'); // 'all', 'pending', 'critical'
+    const [taskFilter, setTaskFilter] = useState('all'); // 'all', 'pending', 'critical', 'completed', 'deleted'
+    const [platformFilter, setPlatformFilter] = useState('all');
+    const [employeeFilter, setEmployeeFilter] = useState('all');
 
     const myTasks = useMemo(
         () => tasks.filter((t) => t.assigned_to_id === user?.id),
         [tasks, user]
     );
     const unreadCount = notifications.filter((n) => !n.read).length;
-    const pendingCount = tasks.filter((t) => t.status !== 'completed').length;
-    const criticalCount = tasks.filter((t) => getPendingWarning(t)?.level === 3).length;
+    const activeTasks = tasks.filter((t) => !t.deleted);
+    const pendingCount = activeTasks.filter((t) => t.status !== 'completed').length;
+    const criticalCount = activeTasks.filter((t) => getPendingWarning(t)?.level === 3).length;
 
     const visibleTasks = isAdmin ? tasks : myTasks;
+    const activeVisibleTasks = visibleTasks.filter((t) => !t.deleted);
 
     const greeting = (() => {
         const h = dhakaHour();
@@ -105,11 +109,11 @@ export default function Home() {
                         {greeting}
                     </h1>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <Stat label="Pending tasks" value={pendingCount} onClick={() => handleStatClick('pending')} />
-                        <Stat label={isAdmin ? 'Total assigned' : 'My tasks'} value={visibleTasks.length} onClick={() => handleStatClick('total')} />
+                        <Stat label="Pending tasks" value={pendingCount} onClick={() => { setView('tasks'); setTaskFilter('pending'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
+                        <Stat label={isAdmin ? 'Total active' : 'My active tasks'} value={activeVisibleTasks.length} onClick={() => { setView('tasks'); setTaskFilter('all'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         <Stat label="Unread alerts" value={unreadCount} accent={unreadCount > 0} onClick={() => handleStatClick('notifications')} />
                         {isAdmin && (
-                            <Stat label="Pending 3+ days" value={criticalCount} accentColor={criticalCount > 0 ? '#ef4444' : undefined} onClick={() => handleStatClick('critical')} />
+                            <Stat label="Pending 3+ days" value={criticalCount} accentColor={criticalCount > 0 ? '#ef4444' : undefined} onClick={() => { setView('tasks'); setTaskFilter('critical'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         )}
                     </div>
                 </header>
@@ -122,48 +126,100 @@ export default function Home() {
                     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
                         <div>
                             <SectionTitle>Master Calendar</SectionTitle>
-                            <MasterCalendar tasks={visibleTasks} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} />
+                            <MasterCalendar tasks={activeVisibleTasks} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} />
                         </div>
                         <div className="space-y-4">
                             {isAdmin && <CreateTaskForm users={users} onCreate={createTask} />}
-                            <UrgentDeadlinesStack tasks={visibleTasks} />
+                            <UrgentDeadlinesStack tasks={activeVisibleTasks} />
                         </div>
                     </div>
                 ) : view === 'tasks' ? (
                     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
                         <div>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-                                <h2 className="font-display text-[13px] font-semibold uppercase tracking-[0.15em] text-[#8E8E93]">
-                                    {isAdmin ? 'All Tasks' : 'My Tasks'}
-                                </h2>
-                                <div className="flex items-center gap-2 text-[11px]">
-                                    <button onClick={() => setTaskFilter('all')} className={`px-2.5 py-1.5 rounded-[6px] transition-colors ${taskFilter === 'all' ? 'bg-[#262626] text-[#FAFAFA]' : 'bg-[#121212] border border-[#262626] text-[#8E8E93] hover:text-[#FAFAFA]'}`}>All</button>
-                                    <button onClick={() => setTaskFilter('pending')} className={`px-2.5 py-1.5 rounded-[6px] transition-colors ${taskFilter === 'pending' ? 'bg-[#262626] text-[#FAFAFA]' : 'bg-[#121212] border border-[#262626] text-[#8E8E93] hover:text-[#FAFAFA]'}`}>Pending</button>
-                                    {isAdmin && (
-                                        <button onClick={() => setTaskFilter('critical')} className={`px-2.5 py-1.5 rounded-[6px] transition-colors ${taskFilter === 'critical' ? 'bg-[#ef4444] text-white' : 'bg-[#121212] border border-[#262626] text-[#8E8E93] hover:text-[#ef4444]'}`}>3+ Days Late</button>
-                                    )}
-                                </div>
+                                <SectionTitle>{isAdmin ? 'Task Dashboard' : 'My Tasks'}</SectionTitle>
                             </div>
+                            
+                            {/* Detailed Filtering UI */}
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 bg-[#121212] p-4 rounded-[8px] border border-[#262626]">
+                                <div className="flex flex-col gap-1.5 flex-1">
+                                    <label className="text-[10px] uppercase tracking-wider text-[#525252]">Status</label>
+                                    <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                        <option value="all">All Active</option>
+                                        <option value="pending">Pending Only</option>
+                                        <option value="completed">Completed Only</option>
+                                        {isAdmin && <option value="critical">3+ Days Late</option>}
+                                        {isAdmin && <option value="deleted">Deleted Tasks</option>}
+                                    </select>
+                                </div>
+                                
+                                <div className="flex flex-col gap-1.5 flex-1">
+                                    <label className="text-[10px] uppercase tracking-wider text-[#525252]">Platform</label>
+                                    <select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                        <option value="all">All Platforms</option>
+                                        {PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                                    </select>
+                                </div>
+
+                                {isAdmin && (
+                                    <div className="flex flex-col gap-1.5 flex-1">
+                                        <label className="text-[10px] uppercase tracking-wider text-[#525252]">Employee</label>
+                                        <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                            <option value="all">All Employees</option>
+                                            {users.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+
                             {(() => {
                                 let displayed = visibleTasks;
-                                if (taskFilter === 'pending') displayed = displayed.filter(t => t.status !== 'completed');
-                                if (taskFilter === 'critical') displayed = displayed.filter(t => getPendingWarning(t)?.level === 3);
-                                return displayed.length === 0 ? (
-                                    <EmptyState message={`No ${taskFilter === 'all' ? '' : taskFilter} tasks found.`} />
-                                ) : (
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        {displayed
-                                            .slice()
-                                            .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
-                                            .map((t) => (
-                                                <TaskCard key={t.id} task={t} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} onUpdateNotes={updateTaskNotes} />
-                                            ))}
-                                    </div>
+                                
+                                if (taskFilter === 'deleted') {
+                                    displayed = displayed.filter(t => t.deleted);
+                                } else {
+                                    displayed = displayed.filter(t => !t.deleted);
+                                    if (taskFilter === 'pending') displayed = displayed.filter(t => t.status !== 'completed');
+                                    if (taskFilter === 'completed') displayed = displayed.filter(t => t.status === 'completed');
+                                    if (taskFilter === 'critical') displayed = displayed.filter(t => getPendingWarning(t)?.level === 3);
+                                }
+
+                                if (platformFilter !== 'all') {
+                                    displayed = displayed.filter(t => t.platform === platformFilter);
+                                }
+                                
+                                if (employeeFilter !== 'all') {
+                                    displayed = displayed.filter(t => t.assigned_to_id === employeeFilter);
+                                }
+                                
+                                const filteredCount = displayed.length;
+                                const filteredPending = displayed.filter(t => t.status !== 'completed').length;
+                                const filteredCompleted = displayed.filter(t => t.status === 'completed').length;
+
+                                return (
+                                    <>
+                                        <div className="mb-4 text-[12px] text-[#8E8E93]">
+                                            Showing <strong className="text-[#FAFAFA]">{filteredCount}</strong> tasks 
+                                            ({filteredPending} pending, {filteredCompleted} completed)
+                                        </div>
+                                        {displayed.length === 0 ? (
+                                            <EmptyState message="No tasks match the selected filters." />
+                                        ) : (
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                {displayed
+                                                    .slice()
+                                                    .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+                                                    .map((t) => (
+                                                        <TaskCard key={t.id} task={t} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} onUpdateNotes={updateTaskNotes} />
+                                                    ))}
+                                            </div>
+                                        )}
+                                    </>
                                 );
                             })()}
                         </div>
                         <div className="space-y-4">
-                            <UrgentDeadlinesStack tasks={visibleTasks} />
+                            <UrgentDeadlinesStack tasks={activeVisibleTasks} />
                         </div>
                     </div>
                 ) : view === 'team' ? (

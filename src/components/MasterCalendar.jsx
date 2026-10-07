@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
-import { getTaskStatus, groupByDate, formatDeadline } from '@/lib/status';
+import { getTaskStatus, groupByDate, formatDeadline, PLATFORMS } from '@/lib/status';
 import { dayHeaderFromKey } from '@/lib/datetime';
 
 // dateStr is a 'YYYY-MM-DD' key in Bangladesh time (see groupByDate)
@@ -28,11 +28,27 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                 {isAdmin && (
                     <FilterChip active={filter === 'mine'} onClick={() => setFilter('mine')}>Mine</FilterChip>
                 )}
-                {['youtube', 'spotify', 'instagram', 'snapchat', 'facebook'].map((p) => (
-                    <FilterChip key={p} active={filter === p} onClick={() => setFilter(p)}>
-                        {p}
+                {PLATFORMS.map((p) => (
+                    <FilterChip key={p.id} active={filter === p.id} onClick={() => setFilter(p.id)}>
+                        {p.label}
                     </FilterChip>
                 ))}
+            </div>
+
+            {/* Overall stats for current view */}
+            <div className="bg-[#121212] border-b border-[#262626] p-3 flex flex-wrap items-center gap-4 text-[11px] text-[#8E8E93]">
+                <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#FAFAFA]"></span>
+                    <strong>{filtered.length}</strong> Total Assigned
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
+                    <strong>{filtered.filter(t => t.status !== 'completed').length}</strong> Pending
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]"></span>
+                    <strong>{filtered.filter(t => t.status === 'completed').length}</strong> Completed
+                </div>
             </div>
 
             {groups.length === 0 ? (
@@ -43,16 +59,24 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                 <div className="divide-y divide-[#1a1a1a]">
                     {groups.map(([dateStr, dayTasks]) => {
                         const h = dayHeader(dateStr);
+                        const completedCount = dayTasks.filter(t => t.status === 'completed').length;
+                        const pendingCount = dayTasks.length - completedCount;
                         return (
                             <div key={dateStr} className="flex gap-4 p-4">
-                                <div className="w-12 shrink-0 text-right">
+                                <div className="w-16 shrink-0 text-right">
                                     <p className={`font-display text-[11px] uppercase tracking-wide ${h.isToday ? 'text-[#FAFAFA]' : 'text-[#525252]'}`}>
                                         {h.day}
                                     </p>
                                     <p className={`font-display text-2xl font-semibold leading-none ${h.isToday ? 'text-[#FAFAFA]' : 'text-[#8E8E93]'}`}>
                                         {h.date}
                                     </p>
-                                    <p className="text-[10px] text-[#525252]">{h.month}</p>
+                                    <p className="text-[10px] text-[#525252] mb-3">{h.month}</p>
+                                    
+                                    <div className="flex flex-col items-end gap-1 text-[9px] uppercase tracking-wider font-semibold">
+                                        <span className="bg-[#262626] text-[#FAFAFA] px-1.5 py-0.5 rounded-[4px]">{dayTasks.length} Total</span>
+                                        {pendingCount > 0 && <span className="bg-[#1a1a1a] text-[#F59E0B] px-1.5 py-0.5 rounded-[4px] border border-[#262626]">{pendingCount} Pend</span>}
+                                        {completedCount > 0 && <span className="bg-[#1a1a1a] text-[#10B981] px-1.5 py-0.5 rounded-[4px] border border-[#262626]">{completedCount} Done</span>}
+                                    </div>
                                 </div>
                                 <div className="flex-1 space-y-2">
                                     {dayTasks.map((t) => {

@@ -85,9 +85,9 @@ export async function POST(request) {
                 // Load tasks
                 let tasks;
                 if (isAdmin) {
-                    tasks = await Task.find({}).sort({ deadline: -1 }).limit(200).lean();
+                    tasks = await Task.find({}).sort({ deadline: -1 }).limit(500).lean();
                 } else {
-                    tasks = await Task.find({ assigned_to_id: user.id }).sort({ deadline: -1 }).limit(200).lean();
+                    tasks = await Task.find({ assigned_to_id: user.id, deleted: { $ne: true } }).sort({ deadline: -1 }).limit(200).lean();
                 }
 
                 // Load notifications for this user
@@ -203,7 +203,7 @@ export async function POST(request) {
 
             case 'deleteTask': {
                 requireAdmin(user);
-                await Task.findByIdAndDelete(body.taskId);
+                await Task.findByIdAndUpdate(body.taskId, { deleted: true });
                 return NextResponse.json({ ok: true });
             }
 
