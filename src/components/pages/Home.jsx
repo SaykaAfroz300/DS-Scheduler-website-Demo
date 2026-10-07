@@ -38,6 +38,7 @@ export default function Home() {
         approveEmployee,
         denyEmployee,
         requestAccess,
+        inviteEmployee,
         chatSummary,
         chatUnreadCount,
         loadMessages,
@@ -232,6 +233,7 @@ export default function Home() {
                                 onApprove={approveEmployee}
                                 onDeny={denyEmployee}
                                 onRemove={removeEmployee}
+                                onInvite={inviteEmployee}
                             />
                         </div>
                     ) : (

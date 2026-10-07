@@ -162,6 +162,15 @@ export function useStudioData(user) {
         [callApi, loadAll]
     );
 
+    const inviteEmployee = useCallback(
+        async (email) => {
+            await callApi('inviteEmployee', { email });
+            await loadAll();
+            await refreshAccess();
+        },
+        [callApi, loadAll, refreshAccess]
+    );
+
     const removeEmployee = useCallback(
         async (employee) => {
             await callApi('removeEmployee', { userId: employee.user_id || employee.id });
@@ -232,6 +241,7 @@ export function useStudioData(user) {
         markAllRead,
         deleteTask,
         updateTaskNotes,
+        inviteEmployee,
         removeEmployee,
         approveEmployee,
         denyEmployee,

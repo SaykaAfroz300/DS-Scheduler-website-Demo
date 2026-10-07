@@ -35,14 +35,21 @@ export async function POST(request) {
             role: 'user',
         });
 
-        // Auto-create a pending EmployeeAccess record
-        await EmployeeAccess.create({
-            user_id: user._id,
-            email: user.email,
-            full_name: user.full_name,
-            status: 'pending',
-            requested_at: new Date(),
-        });
+        // Auto-create or link EmployeeAccess record
+        const existingAccess = await EmployeeAccess.findOne({ email: email.toLowerCase() });
+        if (existingAccess) {
+            existingAccess.user_id = user._id;
+            existingAccess.full_name = user.full_name;
+            await existingAccess.save();
+        } else {
+            await EmployeeAccess.create({
+                user_id: user._id,
+                email: user.email,
+                full_name: user.full_name,
+                status: 'pending',
+                requested_at: new Date(),
+            });
+        }
 
         const token = generateToken(user);
 

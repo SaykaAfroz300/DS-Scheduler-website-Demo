@@ -7,6 +7,7 @@ import Notification from '@/models/Notification';
 import LeaveRequest from '@/models/LeaveRequest';
 import EmployeeAccess from '@/models/EmployeeAccess';
 import Message from '@/models/Message';
+import User from '@/models/User';
 
 // Helper to check admin
 function requireAdmin(user) {
@@ -262,6 +263,31 @@ export async function POST(request) {
                 return NextResponse.json({ ok: true });
             }
 
+            case 'inviteEmployee': {
+                requireAdmin(user);
+                const { email } = body;
+                if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
+                const existingUser = await User.findOne({ email: email.toLowerCase() });
+                const access = await EmployeeAccess.findOne({ email: email.toLowerCase() });
+                
+                if (access) {
+                    access.status = 'approved';
+                    access.approved_at = new Date();
+                    access.approved_by_id = user.id;
+                    if (existingUser) access.user_id = existingUser._id;
+                    await access.save();
+                } else {
+                    await EmployeeAccess.create({
+                        email: email.toLowerCase(),
+                        status: 'approved',
+                        approved_at: new Date(),
+                        approved_by_id: user.id,
+                        user_id: existingUser ? existingUser._id : null,
+                    });
+                }
+                return NextResponse.json({ ok: true });
+            }
+
             case 'loadAccess': {
                 requireAdmin(user);
                 const records = await EmployeeAccess.find({}).limit(500).lean();
@@ -278,7 +304,7 @@ export async function POST(request) {
 
                 const rows = records.map(a => ({
                     id: a._id.toString(),
-                    user_id: a.user_id.toString(),
+                    user_id: a.user_id ? a.user_id.toString() : null,
                     email: a.email || '',
                     full_name: a.full_name || '',
                     status: a.status,
@@ -287,7 +313,7 @@ export async function POST(request) {
                     denied_at: a.denied_at,
                     removed_at: a.removed_at,
                     denial_reason: a.denial_reason || '',
-                    tasks: stats[a.user_id.toString()] || { pending: 0, completed: 0 },
+                    tasks: a.user_id ? (stats[a.user_id.toString()] || { pending: 0, completed: 0 }) : { pending: 0, completed: 0 },
                 }));
 
                 return NextResponse.json({ rows });

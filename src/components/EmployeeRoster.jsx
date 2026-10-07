@@ -12,11 +12,26 @@ const TABS = [
     { id: 'removed', label: 'Removed', icon: UserX },
 ];
 
-export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRemove }) {
+export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRemove, onInvite }) {
     const [tab, setTab] = useState('pending');
     const [expanded, setExpanded] = useState(null);
     const [actioning, setActioning] = useState(null); // { id, type: 'deny'|'remove' }
     const [reason, setReason] = useState('');
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviting, setInviting] = useState(false);
+
+    const handleInvite = async (e) => {
+        e.preventDefault();
+        if (!inviteEmail) return;
+        setInviting(true);
+        try {
+            await onInvite(inviteEmail);
+            setInviteEmail('');
+            setTab('approved'); // switch to approved tab to see them
+        } finally {
+            setInviting(false);
+        }
+    };
 
     const byStatus = (s) => records.filter((r) => r.status === s);
     const current = byStatus(tab);
@@ -33,7 +48,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
 
     const confirm = async () => {
         if (!actioning) return;
-        const emp = current.find((e) => e.user_id === actioning.id);
+        const emp = current.find((e) => (e.user_id || e.id) === actioning.id);
         if (!emp) return cancelAction();
         if (actioning.type === 'deny') await onDeny(emp, reason);
         else if (actioning.type === 'remove') await onRemove(emp);
@@ -52,6 +67,25 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
 
     return (
         <div>
+            {/* Invite Form */}
+            <form onSubmit={handleInvite} className="mb-6 flex items-center gap-3 rounded-[8px] border border-[#262626] bg-[#121212] p-4">
+                <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="Enter email to invite..."
+                    className="flex-1 bg-[#080808] border border-[#262626] rounded-[6px] px-3 py-2 text-[13px] text-[#FAFAFA] focus:outline-none focus:border-[#FAFAFA]"
+                    required
+                />
+                <button
+                    type="submit"
+                    disabled={inviting}
+                    className="bg-[#FAFAFA] text-[#080808] px-4 py-2 rounded-[6px] text-[12px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                    {inviting ? 'Inviting...' : 'Invite Employee'}
+                </button>
+            </form>
+
             {/* Tabs */}
             <div className="mb-4 flex flex-wrap gap-1 rounded-[6px] border border-[#262626] bg-[#080808] p-1">
                 {TABS.map((t) => {
@@ -87,15 +121,15 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
             ) : (
                 <div className="space-y-3">
                     {current.map((emp) => {
-                        const isExpanded = expanded === emp.user_id;
-                        const activeTasks = activeTasksFor(emp.user_id);
-                        const isActioning = actioning && actioning.id === emp.user_id;
+                        const isExpanded = expanded === (emp.user_id || emp.id);
+                        const activeTasks = emp.user_id ? activeTasksFor(emp.user_id) : [];
+                        const isActioning = actioning && actioning.id === (emp.user_id || emp.id);
 
                         return (
-                            <div key={emp.user_id} className="rounded-[6px] border border-[#262626] bg-[#121212]">
+                            <div key={emp.user_id || emp.id} className="rounded-[6px] border border-[#262626] bg-[#121212]">
                                 <div className="flex items-center justify-between gap-3 p-4">
                                     <button
-                                        onClick={() => setExpanded(isExpanded ? null : emp.user_id)}
+                                        onClick={() => setExpanded(isExpanded ? null : (emp.user_id || emp.id))}
                                         className="flex flex-1 items-center gap-3 text-left"
                                     >
                                         <div className="flex h-9 w-9 items-center justify-center rounded-[6px] border border-[#262626] bg-[#1a1a1a] font-display text-[12px] font-semibold text-[#FAFAFA]">
@@ -127,7 +161,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                             </>
                                         )}
                                         <button
-                                            onClick={() => setExpanded(isExpanded ? null : emp.user_id)}
+                                            onClick={() => setExpanded(isExpanded ? null : (emp.user_id || emp.id))}
                                             className="text-[#8E8E93] hover:text-[#FAFAFA]"
                                         >
                                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -184,7 +218,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                                     <Check className="w-3.5 h-3.5" /> Approve
                                                 </button>
                                                 <button
-                                                    onClick={() => setActioning({ id: emp.user_id, type: 'deny' })}
+                                                    onClick={() => setActioning({ id: emp.user_id || emp.id, type: 'deny' })}
                                                     className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] border border-[#262626] px-3 py-2 text-[12px] font-semibold text-[#ef4444] hover:bg-[#1a1a1a]"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Deny
@@ -194,7 +228,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
 
                                         {tab === 'approved' && !isActioning && (
                                             <button
-                                                onClick={() => setActioning({ id: emp.user_id, type: 'remove' })}
+                                                onClick={() => setActioning({ id: emp.user_id || emp.id, type: 'remove' })}
                                                 className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-[#ef4444] hover:underline"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" /> Remove employee
