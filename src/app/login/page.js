@@ -17,16 +17,22 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [requiresOtp, setRequiresOtp] = useState(false);
+    const [otp, setOtp] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         setLoading(true);
         try {
-            await authApi.login(email, password);
-            window.location.href = "/";
+            const res = await authApi.login(email, password, requiresOtp ? otp : undefined);
+            if (res.requiresOtp) {
+                setRequiresOtp(true);
+            } else {
+                window.location.href = "/";
+            }
         } catch (err) {
-            setError(err.message || "Invalid email or password");
+            setError(err.message || (requiresOtp ? "Invalid OTP" : "Invalid email or password"));
         } finally {
             setLoading(false);
         }
@@ -74,6 +80,7 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="pl-10 h-12"
+                            readOnly={requiresOtp}
                             required
                         />
                     </div>
@@ -95,18 +102,35 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="pl-10 h-12"
+                            readOnly={requiresOtp}
                             required
                         />
                     </div>
                 </div>
+                {requiresOtp && (
+                    <div className="space-y-2 mt-4">
+                        <Label htmlFor="otp">Verification Code</Label>
+                        <p className="text-xs text-muted-foreground mb-2">We sent a 6-digit code to your email.</p>
+                        <Input
+                            id="otp"
+                            type="text"
+                            placeholder="Enter 6-digit OTP"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value)}
+                            className="h-12 text-center text-lg tracking-[0.5em]"
+                            maxLength={6}
+                            required
+                        />
+                    </div>
+                )}
                 <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Signing in...
+                            {requiresOtp ? "Verifying..." : "Signing in..."}
                         </>
                     ) : (
-                        mode === "admin" ? "Admin sign in" : "Employee sign in"
+                        requiresOtp ? "Verify & Login" : (mode === "admin" ? "Admin sign in" : "Employee sign in")
                     )}
                 </Button>
             </form>

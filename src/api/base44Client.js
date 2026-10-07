@@ -49,10 +49,13 @@ async function fetchApi(url, options = {}) {
 
 // Auth API
 export const authApi = {
-    login: async (email, password) => {
+    login: async (email, password, otp = undefined) => {
+        const body = { email, password };
+        if (otp) body.otp = otp;
+        
         const data = await fetchApi('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify(body),
         });
         if (data.token) setToken(data.token);
         return data;

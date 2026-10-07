@@ -8,6 +8,7 @@ import LeaveRequest from '@/models/LeaveRequest';
 import EmployeeAccess from '@/models/EmployeeAccess';
 import Message from '@/models/Message';
 import User from '@/models/User';
+import { sendInviteEmail } from '@/lib/email';
 
 // Helper to check admin
 function requireAdmin(user) {
@@ -285,6 +286,11 @@ export async function POST(request) {
                         user_id: existingUser ? existingUser._id : null,
                     });
                 }
+                
+                const origin = request.headers.get('origin') || 'http://localhost:3000';
+                const inviteLink = `${origin}/register?email=${encodeURIComponent(email.toLowerCase())}`;
+                await sendInviteEmail(email.toLowerCase(), inviteLink);
+
                 return NextResponse.json({ ok: true });
             }
 
