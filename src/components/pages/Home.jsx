@@ -12,6 +12,7 @@ import TaskCard from '@/components/TaskCard';
 import LeavePanel from '@/components/LeavePanel';
 import EmployeeRoster from '@/components/EmployeeRoster';
 import NotificationsPanel from '@/components/NotificationsPanel';
+import { formatLongDateBD, dhakaHour } from '@/lib/datetime';
 
 export default function Home() {
     const { user, logout } = useAuth();
@@ -48,7 +49,7 @@ export default function Home() {
     const visibleTasks = isAdmin ? tasks : myTasks;
 
     const greeting = (() => {
-        const h = new Date().getHours();
+        const h = dhakaHour();
         if (h < 12) return 'Good morning';
         if (h < 18) return 'Good afternoon';
         return 'Good evening';
@@ -74,7 +75,7 @@ export default function Home() {
                 {/* Hero header */}
                 <header className="mb-8">
                     <p className="text-[11px] uppercase tracking-[0.25em] text-[#525252]">
-                        {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                        {formatLongDateBD()}
                     </p>
                     <h1 className="header-clamp font-display font-bold text-[#FAFAFA]">
                         {greeting}

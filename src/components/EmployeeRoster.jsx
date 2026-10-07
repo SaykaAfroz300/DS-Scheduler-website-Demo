@@ -3,6 +3,7 @@ import { Trash2, ChevronDown, ChevronUp, Check, X, Clock, ShieldOff, UserX } fro
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import { getTaskStatus, formatDeadline } from '@/lib/status';
+import { formatDateTimeBD } from '@/lib/datetime';
 
 const TABS = [
     { id: 'pending', label: 'Pending', icon: Clock },
@@ -253,15 +254,5 @@ function Meta({ label, value, mono }) {
 }
 
 function fmt(iso) {
-    try {
-        return new Date(iso).toLocaleString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    } catch (e) {
-        return iso;
-    }
+    return formatDateTimeBD(iso);
 }

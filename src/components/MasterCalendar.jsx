@@ -3,19 +3,11 @@ import { Trash2 } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import { getTaskStatus, groupByDate, formatDeadline } from '@/lib/status';
+import { dayHeaderFromKey } from '@/lib/datetime';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
+// dateStr is a 'YYYY-MM-DD' key in Bangladesh time (see groupByDate)
 function dayHeader(dateStr) {
-    const d = new Date(dateStr);
-    const today = new Date();
-    const isToday = d.toDateString() === today.toDateString();
-    return {
-        day: DAYS[d.getDay()],
-        date: d.getDate(),
-        month: d.toLocaleString(undefined, { month: 'short' }),
-        isToday,
-    };
+    return dayHeaderFromKey(dateStr);
 }
 
 export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDelete }) {

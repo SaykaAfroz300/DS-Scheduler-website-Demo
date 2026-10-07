@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, X, CalendarPlus, Plane } from 'lucide-react';
 import { formatDate } from '@/lib/status';
+import DatePickerBD from './DatePickerBD';
 
 const inputClass =
     'w-full rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2.5 text-[14px] text-[#FAFAFA] placeholder:text-[#525252] focus:border-[#FAFAFA] focus:outline-none';
@@ -66,12 +67,12 @@ function LeaveForm({ onSubmit }) {
             <div className="mt-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className={labelClass}>From</label>
-                        <input type="date" className={`${inputClass} [color-scheme:dark]`} value={form.start_date} onChange={(e) => set('start_date', e.target.value)} />
+                        <label htmlFor="leave-start-date" className={labelClass}>From</label>
+                        <DatePickerBD id="leave-start-date" value={form.start_date} onChange={(v) => set('start_date', v)} />
                     </div>
                     <div>
-                        <label className={labelClass}>To</label>
-                        <input type="date" className={`${inputClass} [color-scheme:dark]`} value={form.end_date} onChange={(e) => set('end_date', e.target.value)} />
+                        <label htmlFor="leave-end-date" className={labelClass}>To</label>
+                        <DatePickerBD id="leave-end-date" value={form.end_date} onChange={(v) => set('end_date', v)} />
                     </div>
                 </div>
                 <div>

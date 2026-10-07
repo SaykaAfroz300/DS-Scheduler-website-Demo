@@ -1,3 +1,5 @@
+import { formatDateTimeBD, formatDateBD, dhakaDateKey } from './datetime';
+
 export const PLATFORMS = [
     { id: 'youtube', label: 'YouTube', initial: 'YT' },
     { id: 'spotify', label: 'Spotify', initial: 'SP' },
@@ -30,24 +32,14 @@ export function statusMeta(status) {
     return STATUS_META[status] || STATUS_META.pending;
 }
 
+// dd/mm/yyyy, hh:mm AM/PM (Bangladesh time)
 export function formatDeadline(deadline) {
-    if (!deadline) return '—';
-    const d = new Date(deadline);
-    return d.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    });
+    return formatDateTimeBD(deadline);
 }
 
+// dd/mm/yyyy (Bangladesh time)
 export function formatDate(date) {
-    if (!date) return '—';
-    return new Date(date).toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
+    return formatDateBD(date);
 }
 
 export function relativeTime(date) {
@@ -65,14 +57,17 @@ export function relativeTime(date) {
     return diff < 0 ? `${str} ago` : `in ${str}`;
 }
 
+// Groups tasks by Bangladesh calendar day. Keys are 'YYYY-MM-DD'.
 export function groupByDate(tasks) {
     const groups = {};
     tasks.forEach((t) => {
-        const key = new Date(t.deadline).toDateString();
+        const key = dhakaDateKey(t.deadline);
+        if (!key) return;
         if (!groups[key]) groups[key] = [];
         groups[key].push(t);
     });
-    return Object.entries(groups).sort(
-        (a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime()
+    Object.values(groups).forEach((list) =>
+        list.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     );
+    return Object.entries(groups).sort((a, b) => a[0].localeCompare(b[0]));
 }
