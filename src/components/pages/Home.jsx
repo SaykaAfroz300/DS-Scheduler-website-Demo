@@ -13,6 +13,7 @@ import LeavePanel from '@/components/LeavePanel';
 import EmployeeRoster from '@/components/EmployeeRoster';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import { formatLongDateBD, dhakaHour } from '@/lib/datetime';
+import { getPendingWarning } from '@/lib/status';
 
 export default function Home() {
     const { user, logout } = useAuth();
@@ -46,6 +47,7 @@ export default function Home() {
     );
     const unreadCount = notifications.filter((n) => !n.read).length;
     const pendingCount = tasks.filter((t) => t.status !== 'completed').length;
+    const criticalCount = tasks.filter((t) => getPendingWarning(t)?.level === 3).length;
 
     const visibleTasks = isAdmin ? tasks : myTasks;
 
@@ -85,6 +87,9 @@ export default function Home() {
                         <Stat label="Pending tasks" value={pendingCount} />
                         <Stat label={isAdmin ? 'Total assigned' : 'My tasks'} value={visibleTasks.length} />
                         <Stat label="Unread alerts" value={unreadCount} accent={unreadCount > 0} />
+                        {isAdmin && (
+                            <Stat label="Pending 3+ days" value={criticalCount} accentColor={criticalCount > 0 ? '#ef4444' : undefined} />
+                        )}
                     </div>
                 </header>
 
@@ -149,10 +154,14 @@ export default function Home() {
     );
 }
 
-function Stat({ label, value, accent }) {
+function Stat({ label, value, accent, accentColor }) {
+    const color = accentColor || (accent ? '#F59E0B' : undefined);
     return (
-        <div className="rounded-[6px] border border-[#262626] bg-[#121212] px-4 py-2.5">
-            <p className="font-display text-2xl font-bold leading-none text-[#FAFAFA]" style={accent ? { color: '#F59E0B' } : undefined}>
+        <div
+            className="rounded-[6px] border border-[#262626] bg-[#121212] px-4 py-2.5"
+            style={accentColor ? { borderColor: accentColor } : undefined}
+        >
+            <p className="font-display text-2xl font-bold leading-none text-[#FAFAFA]" style={color ? { color } : undefined}>
                 {value}
             </p>
             <p className="mt-1 text-[11px] uppercase tracking-wide text-[#525252]">{label}</p>

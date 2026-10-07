@@ -32,6 +32,28 @@ export function statusMeta(status) {
     return STATUS_META[status] || STATUS_META.pending;
 }
 
+// Pending-task warning, counted from when the deadline passed.
+// Day 1 (0–24h late) = yellow, Day 2 (24–48h late) = orange, Day 3+ = red (stays red).
+export const PENDING_WARNING_COLORS = {
+    1: '#FACC15',
+    2: '#F97316',
+    3: '#ef4444',
+};
+
+export function getPendingWarning(task, now = new Date()) {
+    if (!task || task.status === 'completed' || !task.deadline) return null;
+    const lateMs = now.getTime() - new Date(task.deadline).getTime();
+    if (lateMs <= 0) return null;
+    const days = Math.ceil(lateMs / 86400000);
+    const level = Math.min(days, 3);
+    return {
+        days,
+        level,
+        color: PENDING_WARNING_COLORS[level],
+        label: `Pending ${days} day${days === 1 ? '' : 's'}`,
+    };
+}
+
 // dd/mm/yyyy, hh:mm AM/PM (Bangladesh time)
 export function formatDeadline(deadline) {
     return formatDateTimeBD(deadline);

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Check, Link as LinkIcon, Clock, Trash2, Edit2, X } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
-import { getTaskStatus, formatDeadline, relativeTime } from '@/lib/status';
+import { getTaskStatus, getPendingWarning, formatDeadline, relativeTime } from '@/lib/status';
 
 export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, onUpdateNotes }) {
     const status = getTaskStatus(task);
+    const warning = getPendingWarning(task);
     const canComplete = task.status !== 'completed' && (isAdmin || task.assigned_to_id === user?.id);
     const completed = status === 'completed';
 
@@ -36,7 +37,10 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
     };
 
     return (
-        <div className="rounded-[6px] border border-[#262626] bg-[#121212] p-4 transition-colors hover:border-[#3a3a3a]">
+        <div
+            className="rounded-[6px] border border-[#262626] bg-[#121212] p-4 transition-colors hover:border-[#3a3a3a]"
+            style={warning ? { borderLeft: `4px solid ${warning.color}` } : undefined}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <PlatformBadge platform={task.platform} />
@@ -50,7 +54,18 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                     </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                    <StatusBadge status={status} />
+                    {warning ? (
+                        <span
+                            className="inline-flex items-center gap-1.5 rounded-[6px] border px-2 py-1 text-[11px] font-semibold"
+                            style={{ color: warning.color, borderColor: warning.color, backgroundColor: `${warning.color}1A` }}
+                            title="Deadline has passed and the task is still not done"
+                        >
+                            <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ backgroundColor: warning.color }} />
+                            {warning.label}
+                        </span>
+                    ) : (
+                        <StatusBadge status={status} />
+                    )}
                     {isAdmin && onDelete && (
                         <button
                             onClick={() => onDelete(task)}
