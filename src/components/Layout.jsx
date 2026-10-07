@@ -23,9 +23,8 @@ export default function Layout({ view, setView, unreadCount, chatUnreadCount, is
         return (
             <div className="flex min-h-screen flex-col bg-[#080808]">
                 <header className="flex items-center justify-between border-b border-[#262626] px-4 py-3">
-                    <div className="flex items-center gap-2">
-                        {/* UPDATE YOUR LOGO HERE: Change src="/logo.png" to the name of the file you place in your public/ folder */}
-                        <img src="/logo.png" alt="Dhaka Sessions Logo" className="h-6 w-auto object-contain" />
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.jpeg" alt="Dhaka Sessions Logo" className="h-10 w-auto object-contain" />
                         <h1 className="font-display text-[13px] font-bold tracking-[0.2em] text-[#FAFAFA]">DHAKA SESSIONS</h1>
                     </div>
                     <button
@@ -69,9 +68,8 @@ export default function Layout({ view, setView, unreadCount, chatUnreadCount, is
         <div className="flex min-h-screen bg-[#080808]">
             <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-[#262626]">
                 <div className="px-5 py-6">
-                    <div className="flex flex-col gap-2">
-                        {/* UPDATE YOUR LOGO HERE: Change src="/logo.png" to the name of the file you place in your public/ folder */}
-                        <img src="/logo.jpeg" alt="Dhaka Sessions Logo" className="h-8 w-auto object-contain self-start" />
+                    <div className="flex flex-col gap-4">
+                        <img src="/logo.jpeg" alt="Dhaka Sessions Logo" className="h-20 w-auto object-contain self-start" />
                         <div>
                             <h1 className="font-display text-[15px] font-bold tracking-[0.2em] text-[#FAFAFA]">DHAKA SESSIONS</h1>
                             <p className="mt-0.5 text-[10px] uppercase tracking-[0.25em] text-[#525252]">Scheduler</p>

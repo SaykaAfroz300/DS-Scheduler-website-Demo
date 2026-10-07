@@ -5,9 +5,8 @@ export default function AuthLayout({ icon: Icon, title, subtitle, footer, childr
         <div className="min-h-screen flex items-center justify-center bg-background px-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-10">
-                    <div className="mb-4 flex justify-center">
-                        {/* UPDATE YOUR LOGO HERE: Change src="/logo.png" to the name of the file you place in your public/ folder */}
-                        <img src="/logo.png" alt="Dhaka Sessions Logo" className="h-16 w-auto object-contain" />
+                    <div className="mb-6 flex justify-center">
+                        <img src="/logo.jpeg" alt="Dhaka Sessions Logo" className="h-24 w-auto object-contain" />
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
                     {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
