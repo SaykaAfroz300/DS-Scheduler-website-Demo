@@ -31,6 +31,7 @@ export default function Home() {
         respondLeave,
         markAllRead,
         deleteTask,
+        updateTaskNotes,
         removeEmployee,
         approveEmployee,
         denyEmployee,
@@ -114,7 +115,7 @@ export default function Home() {
                                         .slice()
                                         .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
                                         .map((t) => (
-                                            <TaskCard key={t.id} task={t} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} />
+                                            <TaskCard key={t.id} task={t} user={user} isAdmin={isAdmin} onComplete={completeTask} onDelete={deleteTask} onUpdateNotes={updateTaskNotes} />
                                         ))}
                                 </div>
                             )}

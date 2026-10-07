@@ -1,13 +1,39 @@
-import React from 'react';
-import { Check, Link as LinkIcon, Clock, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Link as LinkIcon, Clock, Trash2, Edit2, X } from 'lucide-react';
 import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import { getTaskStatus, formatDeadline, relativeTime } from '@/lib/status';
 
-export default function TaskCard({ task, user, isAdmin, onComplete, onDelete }) {
+export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, onUpdateNotes }) {
     const status = getTaskStatus(task);
     const canComplete = task.status !== 'completed' && (isAdmin || task.assigned_to_id === user?.id);
     const completed = status === 'completed';
+
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [editNotesContent, setEditNotesContent] = useState('');
+    const [savingNotes, setSavingNotes] = useState(false);
+
+    const handleEditNotes = () => {
+        setEditNotesContent(task.notes || '');
+        setIsEditingNotes(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditingNotes(false);
+    };
+
+    const handleSaveNotes = async () => {
+        if (!onUpdateNotes) return;
+        setSavingNotes(true);
+        try {
+            await onUpdateNotes(task, editNotesContent);
+            setIsEditingNotes(false);
+        } catch (e) {
+            console.error('Failed to update notes', e);
+        } finally {
+            setSavingNotes(false);
+        }
+    };
 
     return (
         <div className="rounded-[6px] border border-[#262626] bg-[#121212] p-4 transition-colors hover:border-[#3a3a3a]">
@@ -46,9 +72,54 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete }) 
                 {!completed && <span className="text-[#8E8E93]">{relativeTime(task.deadline)}</span>}
             </div>
 
-            {task.notes && (
-                <p className="mt-3 text-[13px] leading-relaxed text-[#8E8E93]">{task.notes}</p>
-            )}
+            <div className="mt-3">
+                <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-[#8E8E93]">Notes</span>
+                    {isAdmin && !isEditingNotes && onUpdateNotes && (
+                        <button
+                            onClick={handleEditNotes}
+                            className="flex items-center gap-1 text-[11px] text-[#8E8E93] hover:text-[#FAFAFA] transition-colors"
+                        >
+                            <Edit2 className="w-3 h-3" />
+                            Edit
+                        </button>
+                    )}
+                </div>
+                {isEditingNotes ? (
+                    <div className="mt-2 space-y-2">
+                        <textarea
+                            className="w-full rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2 text-[13px] text-[#FAFAFA] placeholder:text-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
+                            rows={3}
+                            value={editNotesContent}
+                            onChange={(e) => setEditNotesContent(e.target.value)}
+                            placeholder="Add notes..."
+                            disabled={savingNotes}
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={handleCancelEdit}
+                                disabled={savingNotes}
+                                className="rounded-[6px] border border-[#262626] px-3 py-1.5 text-[11px] font-medium text-[#8E8E93] hover:text-[#FAFAFA] transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveNotes}
+                                disabled={savingNotes}
+                                className="flex items-center gap-1 rounded-[6px] bg-[#FAFAFA] px-3 py-1.5 text-[11px] font-semibold text-[#080808] hover:opacity-90 transition-opacity disabled:opacity-50"
+                            >
+                                {savingNotes ? 'Saving...' : <><Check className="w-3 h-3" /> Save</>}
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    task.notes ? (
+                        <p className="mt-1.5 text-[13px] leading-relaxed text-[#8E8E93]">{task.notes}</p>
+                    ) : (
+                        <p className="mt-1.5 text-[13px] italic text-[#525252]">No notes.</p>
+                    )
+                )}
+            </div>
 
             {task.google_drive_link && (
                 <a

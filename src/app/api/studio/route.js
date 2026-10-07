@@ -179,6 +179,13 @@ export async function POST(request) {
                 return NextResponse.json({ ok: true });
             }
 
+            case 'updateTaskNotes': {
+                requireAdmin(user);
+                const { taskId, notes } = body;
+                await Task.findByIdAndUpdate(taskId, { notes: notes || '' });
+                return NextResponse.json({ ok: true });
+            }
+
             case 'submitLeave': {
                 await requireApproved(user);
                 const d = body.leave || {};
