@@ -10,6 +10,16 @@ import Message from '@/models/Message';
 import User from '@/models/User';
 import { sendInviteEmail } from '@/lib/email';
 
+// Match an access record by either the user's id or the access record's own id
+// (invited employees who haven't registered yet only have the record id).
+function accessIdFilter(id) {
+    const sid = String(id || '');
+    if (!mongoose.Types.ObjectId.isValid(sid)) {
+        throw { status: 400, message: 'Invalid employee id' };
+    }
+    return { $or: [{ user_id: sid }, { _id: sid }] };
+}
+
 // Helper to check admin
 function requireAdmin(user) {
     if (user.role !== 'admin') {
@@ -109,7 +119,7 @@ export async function POST(request) {
                 // Load users (approved employees) for admin dropdown
                 let users = [];
                 if (isAdmin) {
-                    const accessRecords = await EmployeeAccess.find({ status: 'approved' }).limit(500).lean();
+                    const accessRecords = await EmployeeAccess.find({ status: 'approved', user_id: { $ne: null } }).limit(500).lean();
                     users = accessRecords.map(a => ({
                         id: a.user_id.toString(),
                         email: a.email || '',
@@ -258,7 +268,7 @@ export async function POST(request) {
             case 'removeEmployee': {
                 requireAdmin(user);
                 await EmployeeAccess.updateMany(
-                    { user_id: body.userId },
+                    accessIdFilter(body.userId),
                     { $set: { status: 'removed', removed_at: new Date(), removed_by_id: user.id } }
                 );
                 return NextResponse.json({ ok: true });
@@ -289,7 +299,12 @@ export async function POST(request) {
                 
                 const origin = request.headers.get('origin') || 'http://localhost:3000';
                 const inviteLink = `${origin}/register?email=${encodeURIComponent(email.toLowerCase())}`;
-                await sendInviteEmail(email.toLowerCase(), inviteLink);
+                try {
+                    await sendInviteEmail(email.toLowerCase(), inviteLink);
+                } catch (mailError) {
+                    console.error('Invite email failed:', mailError);
+                    throw { status: 500, message: `Employee approved, but the invite email failed: ${mailError.message}` };
+                }
 
                 return NextResponse.json({ ok: true });
             }
@@ -328,7 +343,7 @@ export async function POST(request) {
             case 'approve': {
                 requireAdmin(user);
                 await EmployeeAccess.updateMany(
-                    { user_id: body.userId },
+                    accessIdFilter(body.userId),
                     { $set: { status: 'approved', approved_at: new Date(), approved_by_id: user.id } }
                 );
                 return NextResponse.json({ ok: true });
@@ -337,7 +352,7 @@ export async function POST(request) {
             case 'deny': {
                 requireAdmin(user);
                 await EmployeeAccess.updateMany(
-                    { user_id: body.userId },
+                    accessIdFilter(body.userId),
                     { $set: { status: 'denied', denied_at: new Date(), denied_by_id: user.id, denial_reason: body.reason || '' } }
                 );
                 return NextResponse.json({ ok: true });
@@ -350,7 +365,7 @@ export async function POST(request) {
                 // Build the list of conversations this user can see.
                 let conversations;
                 if (isAdmin) {
-                    const employees = await EmployeeAccess.find({ status: 'approved' }).limit(500).lean();
+                    const employees = await EmployeeAccess.find({ status: 'approved', user_id: { $ne: null } }).limit(500).lean();
                     conversations = [
                         { id: 'team', type: 'team', title: 'Team Chat' },
                         ...employees.map((a) => ({
@@ -453,6 +468,7 @@ export async function POST(request) {
         }
     } catch (error) {
         const status = error.status || 500;
+        if (status >= 500) console.error('Studio API error:', error);
         const message = error.message || 'Internal server error';
         return NextResponse.json({ error: message }, { status });
     }

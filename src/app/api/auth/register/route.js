@@ -17,29 +17,46 @@ export async function POST(request) {
             );
         }
 
-        // Check if user already exists
-        const existing = await User.findOne({ email: email.toLowerCase() });
+        const emailLower = email.toLowerCase();
+        const existing = await User.findOne({ email: emailLower });
+        const hashed = await hashPassword(password);
+        let user = existing;
+
         if (existing) {
-            return NextResponse.json(
-                { error: 'An account with this email already exists' },
-                { status: 409 }
-            );
+            // Only an employee whose access was removed by the admin may sign up again.
+            const existingAccessRec = await EmployeeAccess.findOne({ email: emailLower });
+            const canReRegister =
+                existing.role !== 'admin' && existingAccessRec && existingAccessRec.status === 'removed';
+            if (!canReRegister) {
+                return NextResponse.json(
+                    { error: 'This email is already registered. Please log in instead (or use Forgot Password).' },
+                    { status: 409 }
+                );
+            }
+            existing.password = hashed;
+            existing.full_name = full_name || existing.full_name || email.split('@')[0];
+            existing.otp_code = null;
+            existing.otp_expires = null;
+            await existing.save();
+        } else {
+            user = await User.create({
+                email: emailLower,
+                password: hashed,
+                full_name: full_name || email.split('@')[0],
+                role: 'user',
+            });
         }
 
-        // Create user
-        const hashed = await hashPassword(password);
-        const user = await User.create({
-            email: email.toLowerCase(),
-            password: hashed,
-            full_name: full_name || email.split('@')[0],
-            role: 'user',
-        });
-
         // Auto-create or link EmployeeAccess record
-        const existingAccess = await EmployeeAccess.findOne({ email: email.toLowerCase() });
+        const existingAccess = await EmployeeAccess.findOne({ email: emailLower });
         if (existingAccess) {
             existingAccess.user_id = user._id;
             existingAccess.full_name = user.full_name;
+            if (existingAccess.status === 'removed' || existingAccess.status === 'denied') {
+                // Needs a fresh admin approval.
+                existingAccess.status = 'pending';
+                existingAccess.requested_at = new Date();
+            }
             await existingAccess.save();
         } else {
             await EmployeeAccess.create({
@@ -51,10 +68,9 @@ export async function POST(request) {
             });
         }
 
-        const token = generateToken(user);
-
-        const response = NextResponse.json({
-            token,
+        // No token/cookie here: the user must sign in and pass the email OTP step.
+        return NextResponse.json({
+            success: true,
             user: {
                 id: user._id.toString(),
                 email: user.email,
@@ -62,16 +78,6 @@ export async function POST(request) {
                 role: user.role,
             },
         });
-
-        response.cookies.set('ds_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 7 * 24 * 60 * 60,
-            path: '/',
-        });
-
-        return response;
     } catch (error) {
         console.error('Register error:', error);
         return NextResponse.json(

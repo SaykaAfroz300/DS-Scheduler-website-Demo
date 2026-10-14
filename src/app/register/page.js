@@ -38,7 +38,7 @@ function RegisterForm() {
         setLoading(true);
         try {
             await authApi.register(email, password, fullName);
-            window.location.href = "/";
+            window.location.href = "/login?registered=1";
         } catch (err) {
             setError(err.message || "Registration failed");
         } finally {

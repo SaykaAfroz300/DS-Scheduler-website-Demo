@@ -31,12 +31,12 @@ export async function POST(request) {
             if (!user.otp_code || user.otp_code !== otp || user.otp_expires < new Date()) {
                 return NextResponse.json({ error: 'Invalid or expired OTP code' }, { status: 401 });
             }
-            
+
             // Clear OTP
             user.otp_code = null;
             user.otp_expires = null;
             await user.save();
-            
+
             // Generate real token
             const token = generateToken(user);
 
@@ -67,7 +67,16 @@ export async function POST(request) {
         user.otp_expires = new Date(Date.now() + 10 * 60000); // 10 minutes
         await user.save();
 
-        await sendOtpEmail(user.email, generatedOtp);
+        try {
+            await sendOtpEmail(user.email, generatedOtp);
+            console.log(`OTP email sent to ${user.email}`);
+        } catch (mailError) {
+            console.error('OTP email failed:', mailError);
+            return NextResponse.json(
+                { error: `Could not send verification email: ${mailError.message}` },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json({ requiresOtp: true });
     } catch (error) {
