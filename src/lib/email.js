@@ -1,17 +1,29 @@
 import nodemailer from 'nodemailer';
 
+const smtpPort = Number(process.env.SMTP_PORT) || 587;
+
 export const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    host: (process.env.SMTP_HOST || 'smtp.gmail.com').trim(),
+    port: smtpPort,
+    secure: smtpPort === 465 || process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
     auth: {
         user: (process.env.EMAIL_USER || '').trim(),
         pass: (process.env.EMAIL_PASS || '').replace(/\s+/g, ''),
     },
 });
 
+// Returns true when real email can be sent. In production a missing config is an error
+// (otherwise the OTP would silently never be delivered); locally we fall back to the terminal.
+function emailConfigured() {
+    const ok = Boolean((process.env.EMAIL_USER || '').trim() && (process.env.EMAIL_PASS || '').trim());
+    if (!ok && process.env.NODE_ENV === 'production') {
+        throw new Error('Email service is not configured on the server (EMAIL_USER / EMAIL_PASS missing in Vercel environment variables)');
+    }
+    return ok;
+}
+
 export async function sendInviteEmail(email, inviteLink) {
-    if (!process.env.EMAIL_USER) {
+    if (!emailConfigured()) {
         console.log(`[DEV EMAIL] Would send invite to ${email} with link: ${inviteLink}`);
         return;
     }
@@ -35,7 +47,7 @@ export async function sendInviteEmail(email, inviteLink) {
 }
 
 export async function sendOtpEmail(email, otp) {
-    if (!process.env.EMAIL_USER) {
+    if (!emailConfigured()) {
         console.log(`[DEV EMAIL] OTP for ${email} is: ${otp}`);
         return;
     }
