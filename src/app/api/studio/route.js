@@ -282,10 +282,22 @@ export async function POST(request) {
                 const access = await EmployeeAccess.findOne({ email: email.toLowerCase() });
                 
                 if (access) {
+                    // Reinviting someone who was removed/denied: wipe the old login account
+                    // so the invite link lets them register again with the same email.
+                    let linkedUser = existingUser;
+                    if (
+                        existingUser &&
+                        existingUser.role !== 'admin' &&
+                        (access.status === 'removed' || access.status === 'denied')
+                    ) {
+                        await User.deleteOne({ _id: existingUser._id });
+                        linkedUser = null;
+                        access.user_id = null;
+                    }
                     access.status = 'approved';
                     access.approved_at = new Date();
                     access.approved_by_id = user.id;
-                    if (existingUser) access.user_id = existingUser._id;
+                    if (linkedUser) access.user_id = linkedUser._id;
                     await access.save();
                 } else {
                     await EmployeeAccess.create({
@@ -306,6 +318,23 @@ export async function POST(request) {
                     throw { status: 500, message: `Employee approved, but the invite email failed: ${mailError.message}` };
                 }
 
+                return NextResponse.json({ ok: true });
+            }
+
+            case 'deleteAccess': {
+                requireAdmin(user);
+                const records = await EmployeeAccess.find({
+                    ...accessIdFilter(body.userId),
+                    status: { $in: ['removed', 'denied'] },
+                });
+                if (!records.length) {
+                    throw { status: 400, message: 'Only removed or denied employees can be deleted' };
+                }
+                for (const rec of records) {
+                    // Delete the login account too (never an admin) so the email is free again.
+                    await User.deleteOne({ email: rec.email, role: { $ne: 'admin' } });
+                    await EmployeeAccess.deleteOne({ _id: rec._id });
+                }
                 return NextResponse.json({ ok: true });
             }
 

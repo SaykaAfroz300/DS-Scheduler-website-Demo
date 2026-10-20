@@ -180,6 +180,14 @@ export function useStudioData(user) {
         [callApi, loadAll, refreshAccess]
     );
 
+    const deleteAccessRecord = useCallback(
+        async (emp) => {
+            await callApi('deleteAccess', { userId: emp.user_id || emp.id });
+            await refreshAccess();
+        },
+        [callApi, refreshAccess]
+    );
+
     const approveEmployee = useCallback(
         async (emp) => {
             await callApi('approve', { userId: emp.user_id });
@@ -243,6 +251,7 @@ export function useStudioData(user) {
         updateTaskNotes,
         inviteEmployee,
         removeEmployee,
+        deleteAccessRecord,
         approveEmployee,
         denyEmployee,
         requestAccess,

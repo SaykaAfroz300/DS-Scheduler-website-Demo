@@ -26,7 +26,8 @@ export async function POST(request) {
             // Only an employee whose access was removed by the admin may sign up again.
             const existingAccessRec = await EmployeeAccess.findOne({ email: emailLower });
             const canReRegister =
-                existing.role !== 'admin' && existingAccessRec && existingAccessRec.status === 'removed';
+                existing.role !== 'admin' && existingAccessRec &&
+                (existingAccessRec.status === 'removed' || existingAccessRec.status === 'denied');
             if (!canReRegister) {
                 return NextResponse.json(
                     { error: 'This email is already registered. Please log in instead (or use Forgot Password).' },

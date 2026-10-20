@@ -35,6 +35,7 @@ export default function Home() {
         deleteTask,
         updateTaskNotes,
         removeEmployee,
+        deleteAccessRecord,
         approveEmployee,
         denyEmployee,
         requestAccess,
@@ -233,6 +234,7 @@ export default function Home() {
                                 onApprove={approveEmployee}
                                 onDeny={denyEmployee}
                                 onRemove={removeEmployee}
+                                onDelete={deleteAccessRecord}
                                 onInvite={inviteEmployee}
                             />
                         </div>

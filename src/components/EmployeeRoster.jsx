@@ -12,7 +12,7 @@ const TABS = [
     { id: 'removed', label: 'Removed', icon: UserX },
 ];
 
-export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRemove, onInvite }) {
+export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRemove, onDelete, onInvite }) {
     const [tab, setTab] = useState('pending');
     const [expanded, setExpanded] = useState(null);
     const [actioning, setActioning] = useState(null); // { id, type: 'deny'|'remove' }
@@ -52,6 +52,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
         if (!emp) return cancelAction();
         if (actioning.type === 'deny') await onDeny(emp, reason);
         else if (actioning.type === 'remove') await onRemove(emp);
+        else if (actioning.type === 'delete') await onDelete(emp);
         cancelAction();
     };
 
@@ -235,6 +236,15 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                             </button>
                                         )}
 
+                                        {(tab === 'denied' || tab === 'removed') && !isActioning && (
+                                            <button
+                                                onClick={() => setActioning({ id: emp.user_id || emp.id, type: 'delete' })}
+                                                className="mt-4 flex items-center gap-1.5 text-[12px] font-medium text-[#ef4444] hover:underline"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Delete from list
+                                            </button>
+                                        )}
+
                                         {isActioning && (
                                             <div className="mt-4 rounded-[6px] border border-[#262626] bg-[#080808] p-3">
                                                 {actioning.type === 'deny' && (
@@ -248,7 +258,9 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                                 <p className="mb-3 text-[12px] text-[#FAFAFA]">
                                                     {actioning.type === 'deny'
                                                         ? 'Deny this access request? They can request again later.'
-                                                        : 'Remove this employee? Their tasks stay as-is and they will lose access immediately.'}
+                                                        : actioning.type === 'delete'
+                                                            ? 'Permanently delete this entry and their account? The email becomes free to register again or be re-invited.'
+                                                            : 'Remove this employee? Their tasks stay as-is and they will lose access immediately.'}
                                                 </p>
                                                 <div className="flex gap-2">
                                                     <button
@@ -256,7 +268,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                                         className={`flex-1 rounded-[6px] px-3 py-2 text-[12px] font-semibold text-white transition-opacity hover:opacity-90 ${actioning.type === 'deny' ? 'bg-[#ef4444]' : 'bg-[#ef4444]'
                                                             }`}
                                                     >
-                                                        {actioning.type === 'deny' ? 'Deny access' : 'Remove employee'}
+                                                        {actioning.type === 'deny' ? 'Deny access' : actioning.type === 'delete' ? 'Delete permanently' : 'Remove employee'}
                                                     </button>
                                                     <button
                                                         onClick={cancelAction}
