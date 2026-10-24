@@ -7,7 +7,7 @@ import { authApi } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2, User } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, User, Eye, EyeOff } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 function RegisterForm() {
@@ -18,6 +18,8 @@ function RegisterForm() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     useEffect(() => {
         const qEmail = searchParams.get("email");
@@ -54,23 +56,23 @@ function RegisterForm() {
             footer={
                 <>
                     Already have an account?{" "}
-                    <Link href="/login" className="text-primary font-medium hover:underline">
+                    <Link href="/login" className="text-[#FFFFFF] font-medium hover:underline">
                         Log in
                     </Link>
                 </>
             }
         >
             {error && (
-                <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm font-medium">
                     {error}
                 </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName" className="text-[#C4C4C4]">Full Name</Label>
                     <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" aria-hidden="true" />
                         <Input
                             id="fullName"
                             type="text"
@@ -79,15 +81,15 @@ function RegisterForm() {
                             placeholder="Your full name"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            className="pl-10 h-12"
+                            className="pl-10 h-12 border-[#333333] bg-[#080808] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus-visible:border-[#FFFFFF]"
                             required
                         />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="text-[#C4C4C4]">Email</Label>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" aria-hidden="true" />
                         <Input
                             id="email"
                             type="email"
@@ -95,44 +97,60 @@ function RegisterForm() {
                             placeholder="you@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="pl-10 h-12"
+                            className="pl-10 h-12 border-[#333333] bg-[#080808] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus-visible:border-[#FFFFFF]"
                             required
                         />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password" className="text-[#C4C4C4]">Password</Label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" aria-hidden="true" />
                         <Input
                             id="password"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             autoComplete="new-password"
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="pl-10 h-12"
+                            className="pl-10 pr-10 h-12 border-[#333333] bg-[#080808] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus-visible:border-[#FFFFFF]"
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword((v) => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#FFFFFF] transition-colors"
+                            aria-label={showPassword ? "Hide password" : "Show password"}
+                        >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="confirm">Confirm Password</Label>
+                    <Label htmlFor="confirm" className="text-[#C4C4C4]">Confirm Password</Label>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" aria-hidden="true" />
                         <Input
                             id="confirm"
-                            type="password"
+                            type={showConfirm ? "text" : "password"}
                             autoComplete="new-password"
                             placeholder="••••••••"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="pl-10 h-12"
+                            className="pl-10 pr-10 h-12 border-[#333333] bg-[#080808] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus-visible:border-[#FFFFFF]"
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirm((v) => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#FFFFFF] transition-colors"
+                            aria-label={showConfirm ? "Hide password" : "Show password"}
+                        >
+                            {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                     </div>
                 </div>
-                <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+                <Button type="submit" className="w-full h-12 font-medium bg-[#FFFFFF] text-[#080808] hover:bg-[#FFFFFF]/90" disabled={loading}>
                     {loading ? (
                         <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -149,7 +167,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
     return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>}>
+        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#080808]"><Loader2 className="w-8 h-8 animate-spin text-[#FFFFFF]" /></div>}>
             <RegisterForm />
         </Suspense>
     );

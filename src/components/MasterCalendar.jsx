@@ -4,10 +4,10 @@ import PlatformBadge from './PlatformBadge';
 import StatusBadge from './StatusBadge';
 import { getTaskStatus, groupByDate, formatDeadline, PLATFORMS } from '@/lib/status';
 import { dayHeaderFromKey } from '@/lib/datetime';
-import { 
-    startOfMonth, endOfMonth, startOfWeek, endOfWeek, 
-    eachDayOfInterval, format, isSameMonth, isToday, 
-    addMonths, subMonths, addWeeks, subWeeks 
+import {
+    startOfMonth, endOfMonth, startOfWeek, endOfWeek,
+    eachDayOfInterval, format, isSameMonth, isToday,
+    addMonths, subMonths, addWeeks, subWeeks
 } from 'date-fns';
 
 export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDelete }) {
@@ -23,16 +23,16 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
     });
 
     // Calendar Grid Logic
-    const startDate = viewMode === 'month' 
+    const startDate = viewMode === 'month'
         ? startOfWeek(startOfMonth(currentDate), { weekStartsOn: 6 }) // Saturday start
         : startOfWeek(currentDate, { weekStartsOn: 6 });
-        
+
     const endDate = viewMode === 'month'
         ? endOfWeek(endOfMonth(currentDate), { weekStartsOn: 6 })
         : endOfWeek(currentDate, { weekStartsOn: 6 });
-        
+
     const days = eachDayOfInterval({ start: startDate, end: endDate });
-    
+
     const taskMap = {};
     filtered.forEach(t => {
         const d = new Date(t.deadline);
@@ -88,15 +88,15 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                         {format(currentDate, viewMode === 'month' ? 'MMMM yyyy' : 'MMM yyyy')}
                     </h2>
                     <div className="flex items-center gap-1">
-                        <button onClick={handlePrev} className="p-1.5 hover:bg-[#1a1a1a] rounded text-[#FAFAFA] transition-colors"><ChevronLeft className="w-4 h-4"/></button>
+                        <button onClick={handlePrev} className="p-1.5 hover:bg-[#1a1a1a] rounded text-[#FAFAFA] transition-colors"><ChevronLeft className="w-4 h-4" /></button>
                         <button onClick={handleToday} className="px-3 py-1 text-xs font-medium hover:bg-[#1a1a1a] rounded border border-[#262626] text-[#FAFAFA] transition-colors">Today</button>
-                        <button onClick={handleNext} className="p-1.5 hover:bg-[#1a1a1a] rounded text-[#FAFAFA] transition-colors"><ChevronRight className="w-4 h-4"/></button>
+                        <button onClick={handleNext} className="p-1.5 hover:bg-[#1a1a1a] rounded text-[#FAFAFA] transition-colors"><ChevronRight className="w-4 h-4" /></button>
                     </div>
                 </div>
                 <div className="flex bg-[#121212] p-1 rounded-[6px] border border-[#262626]">
-                    <button onClick={() => setViewMode('month')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'month' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><CalendarIcon className="w-3.5 h-3.5"/> Month</button>
-                    <button onClick={() => setViewMode('week')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'week' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><CalendarIcon className="w-3.5 h-3.5"/> Week</button>
-                    <button onClick={() => setViewMode('agenda')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'agenda' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><List className="w-3.5 h-3.5"/> Agenda</button>
+                    <button onClick={() => setViewMode('month')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'month' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><CalendarIcon className="w-3.5 h-3.5" /> Month</button>
+                    <button onClick={() => setViewMode('week')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'week' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><CalendarIcon className="w-3.5 h-3.5" /> Week</button>
+                    <button onClick={() => setViewMode('agenda')} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-[4px] transition-colors ${viewMode === 'agenda' ? 'bg-[#262626] text-[#FAFAFA]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'}`}><List className="w-3.5 h-3.5" /> Agenda</button>
                 </div>
             </div>
 
@@ -148,7 +148,7 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                                 const dayTasks = taskMap[key] || [];
                                 const isCurrMonth = isSameMonth(day, currentDate);
                                 const isCurrDay = isToday(day);
-                                
+
                                 return (
                                     <div key={key} className={`border-b border-r border-[#262626] p-1.5 flex flex-col gap-1 min-h-[120px] ${!isCurrMonth ? 'bg-[#0a0a0a] opacity-60' : 'bg-[#080808]'} ${isCurrDay ? 'bg-[#121212]' : ''}`}>
                                         <div className="flex justify-between items-start px-1 mb-1">
@@ -159,12 +159,12 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                                             {dayTasks.map(t => {
                                                 const statusColor = t.status === 'completed' ? 'border-[#10B981]/40 bg-[#10B981]/10 text-[#10B981]' : t.status === 'in_progress' ? 'border-[#3B82F6]/40 bg-[#3B82F6]/10 text-[#3B82F6]' : 'border-[#F59E0B]/40 bg-[#F59E0B]/10 text-[#F59E0B]';
                                                 return (
-                                                    <button 
-                                                        key={t.id} 
+                                                    <button
+                                                        key={t.id}
                                                         onClick={() => setSelectedTask(t)}
                                                         className={`w-full text-left px-1.5 py-1 rounded-[4px] text-[10px] leading-tight border transition-colors hover:brightness-125 ${statusColor}`}
                                                     >
-                                                        <span className="font-bold opacity-80">{t.platform.slice(0,2).toUpperCase()}</span>
+                                                        <span className="font-bold opacity-80">{t.platform.slice(0, 2).toUpperCase()}</span>
                                                         <span className="ml-1 opacity-90 truncate block">{t.title}</span>
                                                     </button>
                                                 );
@@ -184,7 +184,7 @@ export default function MasterCalendar({ tasks, user, isAdmin, onComplete, onDel
                     <div className="w-full max-w-md bg-[#121212] border border-[#262626] rounded-[12px] shadow-2xl overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between border-b border-[#262626] p-4">
                             <h3 className="font-display font-semibold text-[#FAFAFA]">Task Details</h3>
-                            <button onClick={() => setSelectedTask(null)} className="text-[#8E8E93] hover:text-[#FAFAFA]"><X className="w-5 h-5"/></button>
+                            <button onClick={() => setSelectedTask(null)} className="text-[#8E8E93] hover:text-[#FAFAFA]"><X className="w-5 h-5" /></button>
                         </div>
                         <div className="p-4 overflow-y-auto space-y-4">
                             <AgendaTaskCard t={selectedTask} isAdmin={isAdmin} user={user} onComplete={(t) => { onComplete(t); setSelectedTask(null); }} onDelete={(t) => { onDelete(t); setSelectedTask(null); }} />
@@ -239,8 +239,8 @@ function FilterChip({ active, onClick, children }) {
         <button
             onClick={onClick}
             className={`rounded-[6px] border px-2.5 py-1 text-[11px] font-medium capitalize transition-colors ${active
-                    ? 'border-[#FAFAFA] bg-[#FAFAFA] text-[#080808]'
-                    : 'border-[#262626] text-[#8E8E93] hover:border-[#3a3a3a] hover:text-[#FAFAFA]'
+                ? 'border-[#FAFAFA] bg-[#FAFAFA] text-[#080808]'
+                : 'border-[#262626] text-[#8E8E93] hover:border-[#3a3a3a] hover:text-[#FAFAFA]'
                 }`}
         >
             {children}

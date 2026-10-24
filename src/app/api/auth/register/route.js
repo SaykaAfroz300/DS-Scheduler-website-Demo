@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 import EmployeeAccess from '@/models/EmployeeAccess';
+import Notification from '@/models/Notification';
 import { hashPassword, generateToken } from '@/lib/auth';
 
 export async function POST(request) {
@@ -67,6 +68,21 @@ export async function POST(request) {
                 status: 'pending',
                 requested_at: new Date(),
             });
+        }
+
+        // Notify admins of new employee approval request
+        try {
+            const admins = await User.find({ role: 'admin' });
+            for (const adm of admins) {
+                await Notification.create({
+                    user_id: adm._id,
+                    type: 'access_requested',
+                    message: `Employee access request: ${user.full_name || user.email} (${user.email}) requested approval.`,
+                    read: false,
+                });
+            }
+        } catch (notifErr) {
+            console.error('Failed to create admin notification for registration:', notifErr);
         }
 
         // No token/cookie here: the user must sign in and pass the email OTP step.

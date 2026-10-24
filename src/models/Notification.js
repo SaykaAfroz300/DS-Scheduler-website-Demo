@@ -8,7 +8,7 @@ const NotificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['task_completed', 'task_assigned', 'deadline_approaching', 'leave_requested', 'leave_status_update'],
+        enum: ['task_completed', 'task_assigned', 'deadline_approaching', 'leave_requested', 'leave_status_update', 'access_requested'],
         required: true,
     },
     message: {

@@ -58,8 +58,8 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
 
     if (records.length === 0) {
         return (
-            <div className="rounded-[6px] border border-[#262626] bg-[#121212] p-10 text-center">
-                <p className="text-[13px] text-[#8E8E93]">
+            <div className="rounded-[6px] border border-[#333333] bg-[#141414] p-10 text-center">
+                <p className="text-[13px] text-[#C4C4C4]">
                     No employees yet. When someone signs in, their request will appear here for approval.
                 </p>
             </div>
@@ -69,26 +69,26 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
     return (
         <div>
             {/* Invite Form */}
-            <form onSubmit={handleInvite} className="mb-6 flex items-center gap-3 rounded-[8px] border border-[#262626] bg-[#121212] p-4">
+            <form onSubmit={handleInvite} className="mb-6 flex items-center gap-3 rounded-[8px] border border-[#333333] bg-[#141414] p-4">
                 <input
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="Enter email to invite..."
-                    className="flex-1 bg-[#080808] border border-[#262626] rounded-[6px] px-3 py-2 text-[13px] text-[#FAFAFA] focus:outline-none focus:border-[#FAFAFA]"
+                    className="flex-1 bg-[#080808] border border-[#333333] rounded-[6px] px-3 py-2 text-[13px] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus:outline-none focus:border-[#FFFFFF]"
                     required
                 />
                 <button
                     type="submit"
                     disabled={inviting}
-                    className="bg-[#FAFAFA] text-[#080808] px-4 py-2 rounded-[6px] text-[12px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                    className="bg-[#FFFFFF] text-[#080808] px-4 py-2 rounded-[6px] text-[12px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                     {inviting ? 'Inviting...' : 'Invite Employee'}
                 </button>
             </form>
 
             {/* Tabs */}
-            <div className="mb-4 flex flex-wrap gap-1 rounded-[6px] border border-[#262626] bg-[#080808] p-1">
+            <div className="mb-4 flex flex-wrap gap-1 rounded-[6px] border border-[#333333] bg-[#080808] p-1">
                 {TABS.map((t) => {
                     const count = byStatus(t.id).length;
                     const active = tab === t.id;
@@ -100,12 +100,12 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                 setExpanded(null);
                                 cancelAction();
                             }}
-                            className={`flex items-center gap-2 rounded-[6px] px-3 py-2 text-[12px] font-medium transition-colors ${active ? 'bg-[#FAFAFA] text-[#080808]' : 'text-[#8E8E93] hover:text-[#FAFAFA]'
+                            className={`flex items-center gap-2 rounded-[6px] px-3 py-2 text-[12px] font-medium transition-colors ${active ? 'bg-[#FFFFFF] text-[#080808] font-semibold' : 'text-[#C4C4C4] hover:text-[#FFFFFF]'
                                 }`}
                         >
                             {t.label}
                             <span
-                                className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${active ? 'bg-[#080808]/10 text-[#080808]' : 'bg-[#262626] text-[#FAFAFA]'
+                                className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${active ? 'bg-[#080808]/15 text-[#080808]' : 'bg-[#333333] text-[#FFFFFF]'
                                     }`}
                             >
                                 {count}
@@ -116,8 +116,8 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
             </div>
 
             {current.length === 0 ? (
-                <div className="rounded-[6px] border border-[#262626] bg-[#121212] p-8 text-center">
-                    <p className="text-[13px] text-[#8E8E93]">Nothing here.</p>
+                <div className="rounded-[6px] border border-[#333333] bg-[#141414] p-8 text-center">
+                    <p className="text-[13px] text-[#C4C4C4]">Nothing here.</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -127,20 +127,20 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                         const isActioning = actioning && actioning.id === (emp.user_id || emp.id);
 
                         return (
-                            <div key={emp.user_id || emp.id} className="rounded-[6px] border border-[#262626] bg-[#121212]">
+                            <div key={emp.user_id || emp.id} className="rounded-[6px] border border-[#333333] bg-[#141414]">
                                 <div className="flex items-center justify-between gap-3 p-4">
                                     <button
                                         onClick={() => setExpanded(isExpanded ? null : (emp.user_id || emp.id))}
                                         className="flex flex-1 items-center gap-3 text-left"
                                     >
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-[6px] border border-[#262626] bg-[#1a1a1a] font-display text-[12px] font-semibold text-[#FAFAFA]">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-[6px] border border-[#333333] bg-[#1F1F1F] font-display text-[12px] font-semibold text-[#FFFFFF]">
                                             {(emp.full_name || emp.email || '?').slice(0, 1).toUpperCase()}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="truncate text-[14px] font-semibold text-[#FAFAFA]">
+                                            <p className="truncate text-[14px] font-semibold text-[#FFFFFF]">
                                                 {emp.full_name || emp.email || 'Unknown'}
                                             </p>
-                                            <p className="truncate text-[11px] text-[#8E8E93]">{emp.email}</p>
+                                            <p className="truncate text-[12px] text-[#C4C4C4]">{emp.email}</p>
                                         </div>
                                     </button>
 
@@ -148,22 +148,22 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                         {tab === 'approved' && (
                                             <>
                                                 <div className="hidden text-right sm:block">
-                                                    <p className="font-display text-[15px] font-bold leading-none text-[#FAFAFA]">
+                                                    <p className="font-display text-[15px] font-bold leading-none text-[#FFFFFF]">
                                                         {emp.tasks.pending}
                                                     </p>
-                                                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[#525252]">Active</p>
+                                                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[#A3A3A3]">Active</p>
                                                 </div>
                                                 <div className="hidden text-right sm:block">
                                                     <p className="font-display text-[15px] font-bold leading-none text-[#10B981]">
                                                         {emp.tasks.completed}
                                                     </p>
-                                                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[#525252]">Done</p>
+                                                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[#A3A3A3]">Done</p>
                                                 </div>
                                             </>
                                         )}
                                         <button
                                             onClick={() => setExpanded(isExpanded ? null : (emp.user_id || emp.id))}
-                                            className="text-[#8E8E93] hover:text-[#FAFAFA]"
+                                            className="text-[#C4C4C4] hover:text-[#FFFFFF]"
                                         >
                                             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                         </button>
@@ -171,8 +171,8 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                 </div>
 
                                 {isExpanded && (
-                                    <div className="border-t border-[#262626] p-4">
-                                        <div className="mb-3 grid grid-cols-2 gap-3 text-[11px] text-[#8E8E93] sm:grid-cols-3">
+                                    <div className="border-t border-[#333333] p-4">
+                                        <div className="mb-3 grid grid-cols-2 gap-3 text-[11px] text-[#C4C4C4] sm:grid-cols-3">
                                             <Meta label="Status" value={emp.status} />
                                             {emp.requested_at && <Meta label="Requested" value={fmt(emp.requested_at)} />}
                                             {emp.approved_at && <Meta label="Approved" value={fmt(emp.approved_at)} />}
@@ -181,26 +181,26 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                             {emp.google_sub && <Meta label="Google ID" value={emp.google_sub} mono />}
                                         </div>
                                         {emp.denial_reason && (
-                                            <p className="mb-3 rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2 text-[12px] text-[#F59E0B]">
+                                            <p className="mb-3 rounded-[6px] border border-[#333333] bg-[#080808] px-3 py-2 text-[12px] text-[#F59E0B]">
                                                 Reason: {emp.denial_reason}
                                             </p>
                                         )}
 
                                         {tab === 'approved' &&
                                             (activeTasks.length === 0 ? (
-                                                <p className="text-[12px] text-[#8E8E93]">No active tasks.</p>
+                                                <p className="text-[12px] text-[#C4C4C4]">No active tasks.</p>
                                             ) : (
                                                 <div className="space-y-2">
                                                     {activeTasks.map((t) => (
                                                         <div
                                                             key={t.id}
-                                                            className="flex items-center justify-between gap-3 rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2"
+                                                            className="flex items-center justify-between gap-3 rounded-[6px] border border-[#333333] bg-[#080808] px-3 py-2"
                                                         >
                                                             <div className="flex items-center gap-2.5 min-w-0">
                                                                 <PlatformBadge platform={t.platform} />
                                                                 <div className="min-w-0">
-                                                                    <p className="truncate text-[13px] text-[#FAFAFA]">{t.title}</p>
-                                                                    <p className="text-[11px] text-[#8E8E93]">{formatDeadline(t.deadline)}</p>
+                                                                    <p className="truncate text-[13px] text-[#FFFFFF]">{t.title}</p>
+                                                                    <p className="text-[11px] text-[#A3A3A3]">{formatDeadline(t.deadline)}</p>
                                                                 </div>
                                                             </div>
                                                             <StatusBadge status={getTaskStatus(t)} />
@@ -220,7 +220,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                                 </button>
                                                 <button
                                                     onClick={() => setActioning({ id: emp.user_id || emp.id, type: 'deny' })}
-                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] border border-[#262626] px-3 py-2 text-[12px] font-semibold text-[#ef4444] hover:bg-[#1a1a1a]"
+                                                    className="flex flex-1 items-center justify-center gap-1.5 rounded-[6px] border border-[#333333] px-3 py-2 text-[12px] font-semibold text-[#ef4444] transition-colors hover:border-[#ef4444] hover:bg-[#1F1F1F]"
                                                 >
                                                     <X className="w-3.5 h-3.5" /> Deny
                                                 </button>
@@ -246,16 +246,16 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                         )}
 
                                         {isActioning && (
-                                            <div className="mt-4 rounded-[6px] border border-[#262626] bg-[#080808] p-3">
+                                            <div className="mt-4 rounded-[6px] border border-[#333333] bg-[#080808] p-3">
                                                 {actioning.type === 'deny' && (
                                                     <input
                                                         value={reason}
                                                         onChange={(e) => setReason(e.target.value)}
                                                         placeholder="Reason (optional)"
-                                                        className="mb-3 w-full rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2 text-[13px] text-[#FAFAFA] [color-scheme:dark]"
+                                                        className="mb-3 w-full rounded-[6px] border border-[#333333] bg-[#080808] px-3 py-2 text-[13px] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus:border-[#FFFFFF] focus:outline-none [color-scheme:dark]"
                                                     />
                                                 )}
-                                                <p className="mb-3 text-[12px] text-[#FAFAFA]">
+                                                <p className="mb-3 text-[12px] text-[#FFFFFF]">
                                                     {actioning.type === 'deny'
                                                         ? 'Deny this access request? They can request again later.'
                                                         : actioning.type === 'delete'
@@ -272,7 +272,7 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
                                                     </button>
                                                     <button
                                                         onClick={cancelAction}
-                                                        className="rounded-[6px] border border-[#262626] px-3 py-2 text-[12px] font-medium text-[#8E8E93] hover:text-[#FAFAFA]"
+                                                        className="rounded-[6px] border border-[#333333] px-3 py-2 text-[12px] font-medium text-[#C4C4C4] transition-colors hover:border-[#484848] hover:text-[#FFFFFF]"
                                                     >
                                                         Cancel
                                                     </button>
@@ -293,8 +293,8 @@ export default function EmployeeRoster({ records, tasks, onApprove, onDeny, onRe
 function Meta({ label, value, mono }) {
     return (
         <div className="min-w-0">
-            <p className="uppercase tracking-wide text-[#525252]">{label}</p>
-            <p className={`truncate text-[#FAFAFA] ${mono ? 'font-mono text-[11px]' : ''}`}>{value}</p>
+            <p className="uppercase tracking-wide text-[#A3A3A3] text-[10px]">{label}</p>
+            <p className={`truncate text-[#FFFFFF] font-medium ${mono ? 'font-mono text-[11px]' : ''}`}>{value}</p>
         </div>
     );
 }

@@ -7,12 +7,12 @@ export default function PlatformBadge({ platform, size = 'sm' }) {
     return (
         <div className="flex items-center gap-2">
             <div
-                className={`${dims} flex items-center justify-center rounded-[6px] border border-[#262626] bg-[#1a1a1a] font-display font-semibold tracking-tight text-[#FAFAFA]`}
+                className={`${dims} flex items-center justify-center rounded-[6px] border border-[#333333] bg-[#141414] font-display font-semibold tracking-tight text-[#FFFFFF]`}
             >
                 {meta.initial}
             </div>
             {size === 'lg' && (
-                <span className="font-display text-sm font-medium text-[#FAFAFA]">{meta.label}</span>
+                <span className="font-display text-sm font-medium text-[#FFFFFF]">{meta.label}</span>
             )}
         </div>
     );

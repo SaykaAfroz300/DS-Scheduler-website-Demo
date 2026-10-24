@@ -59,6 +59,7 @@ export default function Home() {
     const activeTasks = tasks.filter((t) => !t.deleted);
     const pendingCount = activeTasks.filter((t) => t.status !== 'completed').length;
     const criticalCount = activeTasks.filter((t) => getPendingWarning(t)?.level === 3).length;
+    const pendingAccessCount = isAdmin ? (accessRecords || []).filter(r => r.status === 'pending').length : 0;
 
     const visibleTasks = isAdmin ? tasks : myTasks;
     const activeVisibleTasks = visibleTasks.filter((t) => !t.deleted);
@@ -89,7 +90,7 @@ export default function Home() {
     if (!accessStatus) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[#080808]">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#262626] border-t-[#FAFAFA]" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#333333] border-t-[#FFFFFF]" />
             </div>
         );
     }
@@ -100,20 +101,20 @@ export default function Home() {
     }
 
     return (
-        <Layout view={view} setView={setView} unreadCount={unreadCount} chatUnreadCount={chatUnreadCount} isAdmin={isAdmin}>
+        <Layout view={view} setView={setView} unreadCount={unreadCount + pendingAccessCount} chatUnreadCount={chatUnreadCount} isAdmin={isAdmin}>
             <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 sm:py-10">
                 {/* Hero header */}
                 <header className="mb-8">
-                    <p className="text-[11px] uppercase tracking-[0.25em] text-[#525252]">
+                    <p className="text-[11px] uppercase tracking-[0.25em] text-[#A3A3A3]">
                         {formatLongDateBD()}
                     </p>
-                    <h1 className="header-clamp font-display font-bold text-[#FAFAFA]">
+                    <h1 className="header-clamp font-display font-bold text-[#FFFFFF]">
                         {greeting}
                     </h1>
                     <div className="mt-4 flex flex-wrap items-center gap-3">
                         <Stat label="Pending tasks" value={pendingCount} onClick={() => { setView('tasks'); setTaskFilter('pending'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         <Stat label={isAdmin ? 'Total active' : 'My active tasks'} value={activeVisibleTasks.length} onClick={() => { setView('tasks'); setTaskFilter('all'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
-                        <Stat label="Unread alerts" value={unreadCount} accent={unreadCount > 0} onClick={() => handleStatClick('notifications')} />
+                        <Stat label="Unread alerts" value={unreadCount + pendingAccessCount} accent={(unreadCount + pendingAccessCount) > 0} onClick={() => handleStatClick('notifications')} />
                         {isAdmin && (
                             <Stat label="Pending 3+ days" value={criticalCount} accentColor={criticalCount > 0 ? '#ef4444' : undefined} onClick={() => { setView('tasks'); setTaskFilter('critical'); setPlatformFilter('all'); setEmployeeFilter('all'); }} />
                         )}
@@ -122,7 +123,7 @@ export default function Home() {
 
                 {loading ? (
                     <div className="flex h-64 items-center justify-center">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#262626] border-t-[#FAFAFA]" />
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#333333] border-t-[#FFFFFF]" />
                     </div>
                 ) : view === 'calendar' ? (
                     <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -141,12 +142,12 @@ export default function Home() {
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
                                 <SectionTitle>{isAdmin ? 'Task Dashboard' : 'My Tasks'}</SectionTitle>
                             </div>
-                            
+
                             {/* Detailed Filtering UI */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 bg-[#121212] p-4 rounded-[8px] border border-[#262626]">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 bg-[#141414] p-4 rounded-[8px] border border-[#333333]">
                                 <div className="flex flex-col gap-1.5 flex-1">
-                                    <label className="text-[10px] uppercase tracking-wider text-[#525252]">Status</label>
-                                    <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                    <label className="text-[10px] uppercase tracking-wider text-[#C4C4C4]">Status</label>
+                                    <select value={taskFilter} onChange={(e) => setTaskFilter(e.target.value)} className="bg-[#080808] border border-[#333333] rounded-[6px] text-[13px] text-[#FFFFFF] p-2 focus:border-[#FFFFFF] focus:outline-none">
                                         <option value="all">All Active</option>
                                         <option value="pending">Pending Only</option>
                                         <option value="completed">Completed Only</option>
@@ -154,10 +155,10 @@ export default function Home() {
                                         {isAdmin && <option value="deleted">Deleted Tasks</option>}
                                     </select>
                                 </div>
-                                
+
                                 <div className="flex flex-col gap-1.5 flex-1">
-                                    <label className="text-[10px] uppercase tracking-wider text-[#525252]">Platform</label>
-                                    <select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                    <label className="text-[10px] uppercase tracking-wider text-[#C4C4C4]">Platform</label>
+                                    <select value={platformFilter} onChange={(e) => setPlatformFilter(e.target.value)} className="bg-[#080808] border border-[#333333] rounded-[6px] text-[13px] text-[#FFFFFF] p-2 focus:border-[#FFFFFF] focus:outline-none">
                                         <option value="all">All Platforms</option>
                                         {PLATFORMS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                                     </select>
@@ -165,8 +166,8 @@ export default function Home() {
 
                                 {isAdmin && (
                                     <div className="flex flex-col gap-1.5 flex-1">
-                                        <label className="text-[10px] uppercase tracking-wider text-[#525252]">Employee</label>
-                                        <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} className="bg-[#080808] border border-[#262626] rounded-[6px] text-[13px] text-[#FAFAFA] p-2 focus:border-[#FAFAFA] focus:outline-none">
+                                        <label className="text-[10px] uppercase tracking-wider text-[#C4C4C4]">Employee</label>
+                                        <select value={employeeFilter} onChange={(e) => setEmployeeFilter(e.target.value)} className="bg-[#080808] border border-[#333333] rounded-[6px] text-[13px] text-[#FFFFFF] p-2 focus:border-[#FFFFFF] focus:outline-none">
                                             <option value="all">All Employees</option>
                                             {users.map(u => <option key={u.id} value={u.id}>{u.full_name || u.email}</option>)}
                                         </select>
@@ -176,7 +177,7 @@ export default function Home() {
 
                             {(() => {
                                 let displayed = visibleTasks;
-                                
+
                                 if (taskFilter === 'deleted') {
                                     displayed = displayed.filter(t => t.deleted);
                                 } else {
@@ -189,19 +190,19 @@ export default function Home() {
                                 if (platformFilter !== 'all') {
                                     displayed = displayed.filter(t => t.platform === platformFilter);
                                 }
-                                
+
                                 if (employeeFilter !== 'all') {
                                     displayed = displayed.filter(t => t.assigned_to_id === employeeFilter);
                                 }
-                                
+
                                 const filteredCount = displayed.length;
                                 const filteredPending = displayed.filter(t => t.status !== 'completed').length;
                                 const filteredCompleted = displayed.filter(t => t.status === 'completed').length;
 
                                 return (
                                     <>
-                                        <div className="mb-4 text-[12px] text-[#8E8E93]">
-                                            Showing <strong className="text-[#FAFAFA]">{filteredCount}</strong> tasks 
+                                        <div className="mb-4 text-[12px] text-[#A3A3A3]">
+                                            Showing <strong className="text-[#FFFFFF]">{filteredCount}</strong> tasks
                                             ({filteredPending} pending, {filteredCompleted} completed)
                                         </div>
                                         {displayed.length === 0 ? (
@@ -246,7 +247,15 @@ export default function Home() {
                 ) : view === 'messages' ? (
                     <MessagesPanel chatSummary={chatSummary} loadMessages={loadMessages} sendMessage={sendMessage} isAdmin={isAdmin} />
                 ) : (
-                    <NotificationsPanel notifications={notifications} onMarkAllRead={markAllRead} />
+                    <NotificationsPanel
+                        notifications={notifications}
+                        onMarkAllRead={markAllRead}
+                        isAdmin={isAdmin}
+                        accessRecords={accessRecords}
+                        onApprove={approveEmployee}
+                        onDeny={denyEmployee}
+                        onGoToTeam={() => setView('team')}
+                    />
                 )}
             </div>
         </Layout>
@@ -258,20 +267,20 @@ function Stat({ label, value, accent, accentColor, onClick }) {
     return (
         <button
             onClick={onClick}
-            className="rounded-[6px] border border-[#262626] bg-[#121212] px-4 py-2.5 text-left transition-colors hover:border-[#3a3a3a] hover:bg-[#1a1a1a]"
+            className="rounded-[6px] border border-[#333333] bg-[#141414] px-4 py-2.5 text-left transition-colors hover:border-[#484848] hover:bg-[#1F1F1F]"
             style={accentColor ? { borderColor: accentColor } : undefined}
         >
-            <p className="font-display text-2xl font-bold leading-none text-[#FAFAFA]" style={color ? { color } : undefined}>
+            <p className="font-display text-2xl font-bold leading-none text-[#FFFFFF]" style={color ? { color } : undefined}>
                 {value}
             </p>
-            <p className="mt-1 text-[11px] uppercase tracking-wide text-[#525252]">{label}</p>
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-[#A3A3A3]">{label}</p>
         </button>
     );
 }
 
 function SectionTitle({ children }) {
     return (
-        <h2 className="mb-4 font-display text-[13px] font-semibold uppercase tracking-[0.15em] text-[#8E8E93]">
+        <h2 className="mb-4 font-display text-[13px] font-semibold uppercase tracking-[0.15em] text-[#C4C4C4]">
             {children}
         </h2>
     );
@@ -279,8 +288,8 @@ function SectionTitle({ children }) {
 
 function EmptyState({ message }) {
     return (
-        <div className="rounded-[6px] border border-[#262626] bg-[#121212] p-10 text-center">
-            <p className="text-[13px] text-[#8E8E93]">{message}</p>
+        <div className="rounded-[6px] border border-[#333333] bg-[#141414] p-10 text-center">
+            <p className="text-[13px] text-[#A3A3A3]">{message}</p>
         </div>
     );
 }

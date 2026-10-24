@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import { getAuthUser } from '@/lib/auth';
 import EmployeeAccess from '@/models/EmployeeAccess';
+import User from '@/models/User';
+import Notification from '@/models/Notification';
 
 export async function POST(request) {
     try {
@@ -36,6 +38,22 @@ export async function POST(request) {
                         requested_at: new Date(),
                     });
                 }
+
+                // Notify admins of employee re-requesting access
+                try {
+                    const admins = await User.find({ role: 'admin' });
+                    for (const adm of admins) {
+                        await Notification.create({
+                            user_id: adm._id,
+                            type: 'access_requested',
+                            message: `Employee access request: ${user.full_name || user.email} (${user.email}) requested approval.`,
+                            read: false,
+                        });
+                    }
+                } catch (notifErr) {
+                    console.error('Failed to notify admins of access request:', notifErr);
+                }
+
                 return NextResponse.json({ status: 'pending' });
             }
             return NextResponse.json({ status: access.status });
@@ -50,6 +68,22 @@ export async function POST(request) {
                 status: 'pending',
                 requested_at: new Date(),
             });
+
+            // Notify admins of new pending access
+            try {
+                const admins = await User.find({ role: 'admin' });
+                for (const adm of admins) {
+                    await Notification.create({
+                        user_id: adm._id,
+                        type: 'access_requested',
+                        message: `Employee access request: ${user.full_name || user.email} (${user.email}) requested approval.`,
+                        read: false,
+                    });
+                }
+            } catch (notifErr) {
+                console.error('Failed to notify admins of new access request:', notifErr);
+            }
+
             return NextResponse.json({ status: 'pending' });
         }
 

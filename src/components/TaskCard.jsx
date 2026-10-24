@@ -38,17 +38,17 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
 
     return (
         <div
-            className="rounded-[6px] border border-[#262626] bg-[#121212] p-4 transition-colors hover:border-[#3a3a3a]"
+            className="rounded-[6px] border border-[#333333] bg-[#141414] p-4 transition-colors hover:border-[#484848]"
             style={warning ? { borderLeft: `4px solid ${warning.color}` } : undefined}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <PlatformBadge platform={task.platform} />
                     <div>
-                        <h3 className="font-display text-[15px] font-semibold leading-tight text-[#FAFAFA]">{task.title}</h3>
-                        <div className="mt-1 flex items-center gap-2 text-[11px] uppercase tracking-wide text-[#8E8E93]">
+                        <h3 className="font-display text-[15px] font-semibold leading-tight text-[#FFFFFF]">{task.title}</h3>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] uppercase tracking-wide text-[#A3A3A3]">
                             <span>{task.content_type}</span>
-                            <span className="text-[#3a3a3a]">/</span>
+                            <span className="text-[#484848]">/</span>
                             <span>{task.assigned_to_name || 'Unassigned'}</span>
                         </div>
                     </div>
@@ -69,7 +69,7 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                     {isAdmin && onDelete && (
                         <button
                             onClick={() => onDelete(task)}
-                            className="flex h-7 w-7 items-center justify-center rounded-[6px] border border-[#262626] text-[#8E8E93] transition-colors hover:border-[#ef4444] hover:text-[#ef4444]"
+                            className="flex h-7 w-7 items-center justify-center rounded-[6px] border border-[#333333] text-[#C4C4C4] transition-colors hover:border-[#ef4444] hover:text-[#ef4444]"
                             title="Delete task"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -78,22 +78,22 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                 </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2 text-[12px] text-[#8E8E93]">
+            <div className="mt-3 flex items-center gap-2 text-[12px] text-[#C4C4C4]">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{formatDeadline(task.deadline)}</span>
                 {!completed && (
-                    <span className="text-[#3a3a3a]">·</span>
+                    <span className="text-[#484848]">·</span>
                 )}
-                {!completed && <span className="text-[#8E8E93]">{relativeTime(task.deadline)}</span>}
+                {!completed && <span className="text-[#A3A3A3]">{relativeTime(task.deadline)}</span>}
             </div>
 
             <div className="mt-3">
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium uppercase tracking-wide text-[#8E8E93]">Notes</span>
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-[#C4C4C4]">Notes</span>
                     {isAdmin && !isEditingNotes && onUpdateNotes && (
                         <button
                             onClick={handleEditNotes}
-                            className="flex items-center gap-1 text-[11px] text-[#8E8E93] hover:text-[#FAFAFA] transition-colors"
+                            className="flex items-center gap-1 text-[11px] text-[#A3A3A3] hover:text-[#FFFFFF] transition-colors"
                         >
                             <Edit2 className="w-3 h-3" />
                             Edit
@@ -103,7 +103,7 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                 {isEditingNotes ? (
                     <div className="mt-2 space-y-2">
                         <textarea
-                            className="w-full rounded-[6px] border border-[#262626] bg-[#080808] px-3 py-2 text-[13px] text-[#FAFAFA] placeholder:text-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
+                            className="w-full rounded-[6px] border border-[#333333] bg-[#080808] px-3 py-2 text-[13px] text-[#FFFFFF] placeholder:text-[#A3A3A3] focus:border-[#FFFFFF] focus:outline-none resize-none"
                             rows={3}
                             value={editNotesContent}
                             onChange={(e) => setEditNotesContent(e.target.value)}
@@ -114,14 +114,14 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                             <button
                                 onClick={handleCancelEdit}
                                 disabled={savingNotes}
-                                className="rounded-[6px] border border-[#262626] px-3 py-1.5 text-[11px] font-medium text-[#8E8E93] hover:text-[#FAFAFA] transition-colors disabled:opacity-50"
+                                className="rounded-[6px] border border-[#333333] px-3 py-1.5 text-[11px] font-medium text-[#C4C4C4] hover:text-[#FFFFFF] transition-colors disabled:opacity-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveNotes}
                                 disabled={savingNotes}
-                                className="flex items-center gap-1 rounded-[6px] bg-[#FAFAFA] px-3 py-1.5 text-[11px] font-semibold text-[#080808] hover:opacity-90 transition-opacity disabled:opacity-50"
+                                className="flex items-center gap-1 rounded-[6px] bg-[#FFFFFF] px-3 py-1.5 text-[11px] font-semibold text-[#080808] hover:opacity-90 transition-opacity disabled:opacity-50"
                             >
                                 {savingNotes ? 'Saving...' : <><Check className="w-3 h-3" /> Save</>}
                             </button>
@@ -129,9 +129,9 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                     </div>
                 ) : (
                     task.notes ? (
-                        <p className="mt-1.5 text-[13px] leading-relaxed text-[#8E8E93]">{task.notes}</p>
+                        <p className="mt-1.5 text-[13px] leading-relaxed text-[#C4C4C4]">{task.notes}</p>
                     ) : (
-                        <p className="mt-1.5 text-[13px] italic text-[#525252]">No notes.</p>
+                        <p className="mt-1.5 text-[13px] italic text-[#A3A3A3]">No notes.</p>
                     )
                 )}
             </div>
@@ -141,7 +141,7 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
                     href={task.google_drive_link}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-[#FAFAFA] underline decoration-[#3a3a3a] underline-offset-4 hover:decoration-[#FAFAFA]"
+                    className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-[#FFFFFF] underline decoration-[#484848] underline-offset-4 hover:decoration-[#FFFFFF]"
                 >
                     <LinkIcon className="w-3.5 h-3.5" />
                     Google Drive folder
@@ -151,7 +151,7 @@ export default function TaskCard({ task, user, isAdmin, onComplete, onDelete, on
             {canComplete && (
                 <button
                     onClick={() => onComplete(task)}
-                    className="mt-4 w-full rounded-[6px] border border-[#FAFAFA] bg-[#FAFAFA] px-4 py-2.5 font-display text-[13px] font-semibold text-[#080808] transition-opacity hover:opacity-90"
+                    className="mt-4 w-full rounded-[6px] border border-[#FFFFFF] bg-[#FFFFFF] px-4 py-2.5 font-display text-[13px] font-semibold text-[#080808] transition-opacity hover:opacity-90"
                 >
                     Mark as Done
                 </button>
